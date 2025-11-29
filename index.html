@@ -1,0 +1,1040 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Play, Pause, ChevronDown, ChevronUp, Music, Settings, Volume2, Info, Edit3, X, Guitar, Disc } from 'lucide-react';
+
+// --- Music Theory Data & Logic ---
+
+const NOTES_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const NOTES_FLAT = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+
+const SCALES = {
+  major: { name: 'Major', intervals: [0, 2, 4, 5, 7, 9, 11], steps: [2, 2, 1, 2, 2, 2, 1] },
+  natural_minor: { name: 'Natural Minor', intervals: [0, 2, 3, 5, 7, 8, 10], steps: [2, 1, 2, 2, 1, 2, 2] },
+  harmonic_minor: { name: 'Harmonic Minor', intervals: [0, 2, 3, 5, 7, 8, 11], steps: [2, 1, 2, 2, 1, 3, 1] },
+  melodic_minor: { name: 'Melodic Minor', intervals: [0, 2, 3, 5, 7, 9, 11], steps: [2, 1, 2, 2, 2, 2, 1] },
+  dorian: { name: 'Dorian', intervals: [0, 2, 3, 5, 7, 9, 10], steps: [2, 1, 2, 2, 2, 1, 2] },
+  phrygian: { name: 'Phrygian', intervals: [0, 1, 3, 5, 7, 8, 10], steps: [1, 2, 2, 2, 1, 2, 2] },
+  lydian: { name: 'Lydian', intervals: [0, 2, 4, 6, 7, 9, 11], steps: [2, 2, 2, 1, 2, 2, 1] },
+  mixolydian: { name: 'Mixolydian', intervals: [0, 2, 4, 5, 7, 9, 10], steps: [2, 2, 1, 2, 2, 1, 2] },
+  locrian: { name: 'Locrian', intervals: [0, 1, 3, 5, 6, 8, 10], steps: [1, 2, 2, 1, 2, 2, 2] },
+  major_pentatonic: { name: 'Major Pentatonic', intervals: [0, 2, 4, 7, 9], steps: [2, 2, 3, 2, 3] },
+  minor_pentatonic: { name: 'Minor Pentatonic', intervals: [0, 3, 5, 7, 10], steps: [3, 2, 2, 3, 2] },
+  blues: { name: 'Blues', intervals: [0, 3, 5, 6, 7, 10], steps: [3, 2, 1, 1, 3, 2] },
+};
+
+const INTERVAL_NAMES = {
+  0: 'P1', 1: 'm2', 2: 'M2', 3: 'm3', 4: 'M3', 5: 'P4', 6: 'd5/A4', 7: 'P5', 8: 'm6', 9: 'M6', 10: 'm7', 11: 'M7', 12: 'P8'
+};
+
+// --- Theme Colors ---
+const THEME_COLORS = {
+    0: 'rose',      // C
+    1: 'orange',    // C# / Db
+    2: 'amber',     // D
+    3: 'yellow',    // D# / Eb
+    4: 'lime',      // E
+    5: 'emerald',   // F
+    6: 'teal',      // F# / Gb
+    7: 'cyan',      // G
+    8: 'sky',       // G# / Ab
+    9: 'indigo',    // A
+    10: 'violet',   // A# / Bb
+    11: 'fuchsia',  // B
+};
+
+const getKeyColor = (root) => {
+    const idx = getNoteIndex(root);
+    return THEME_COLORS[idx] || 'purple'; // Fallback
+};
+
+// --- Helper Functions ---
+
+const getNoteIndex = (note) => {
+  let idx = NOTES_SHARP.indexOf(note);
+  if (idx === -1) idx = NOTES_FLAT.indexOf(note);
+  return idx;
+};
+
+const getScaleNotes = (root, scaleKey) => {
+  const rootIdx = getNoteIndex(root);
+  const scale = SCALES[scaleKey];
+  const notes = [];
+  
+  const useFlats = ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb'].includes(root) || scaleKey.includes('minor') && ['D', 'G', 'C', 'F'].includes(root);
+  const noteSource = useFlats ? NOTES_FLAT : NOTES_SHARP;
+
+  scale.intervals.forEach((interval, i) => {
+    const chromaticIdx = (rootIdx + interval) % 12;
+    notes.push({
+      note: noteSource[chromaticIdx],
+      intervalName: INTERVAL_NAMES[interval],
+      semitonesFromRoot: interval,
+      stepToNext: scale.steps[i] || 0,
+      degree: i + 1,
+      chromaticIndex: chromaticIdx
+    });
+  });
+  return notes;
+};
+
+const getDiatonicChords = (scaleNotes, scaleKey) => {
+    if (scaleNotes.length < 7 && !scaleKey.includes('pentatonic') && !scaleKey.includes('blues')) return []; 
+    if (scaleKey.includes('pentatonic') || scaleKey.includes('blues')) return [];
+
+    return scaleNotes.map((rootNote, i) => {
+        const indices = [0, 2, 4, 6, 8, 10, 12].map(offset => (i + offset) % scaleNotes.length);
+        const stack = indices.map(idx => scaleNotes[idx]);
+
+        const third = stack[1];
+        const fifth = stack[2];
+        const seventh = stack[3];
+
+        const dist3 = (third.semitonesFromRoot - rootNote.semitonesFromRoot + 12) % 12;
+        const dist5 = (fifth.semitonesFromRoot - rootNote.semitonesFromRoot + 12) % 12;
+        const dist7 = (seventh.semitonesFromRoot - rootNote.semitonesFromRoot + 12) % 12;
+
+        let baseQuality = '';
+        let ext7 = '';
+        
+        if (dist3 === 4 && dist5 === 7) { baseQuality = ''; ext7 = dist7 === 11 ? 'maj7' : '7'; }
+        else if (dist3 === 3 && dist5 === 7) { baseQuality = 'm'; ext7 = dist7 === 10 ? '7' : 'maj7'; }
+        else if (dist3 === 3 && dist5 === 6) { baseQuality = 'dim'; ext7 = dist7 === 10 ? 'm7b5' : 'dim7'; }
+        else if (dist3 === 4 && dist5 === 8) { baseQuality = 'aug'; ext7 = 'maj7#5'; }
+        else { baseQuality = ''; ext7 = '7?'; }
+
+        const generateName = (complexity) => {
+            if (complexity === 3) return `${rootNote.note}${baseQuality}`;
+            
+            let suffix = ext7;
+            if (complexity === 4) return `${rootNote.note}${baseQuality}${suffix.replace('maj', 'M').replace('dim7', 'dim7')}`;
+
+            let extNum = complexity === 5 ? '9' : complexity === 6 ? '11' : '13';
+            
+            if (suffix.includes('maj7')) return `${rootNote.note}${baseQuality}${suffix.replace('maj7', 'M' + extNum)}`;
+            if (baseQuality === 'm' && suffix === '7') return `${rootNote.note}m${extNum}`;
+            if (baseQuality === '' && suffix === '7') return `${rootNote.note}${extNum}`;
+            if (suffix === 'm7b5') return `${rootNote.note}m${extNum}b5`;
+            
+            return `${rootNote.note}${baseQuality}${extNum}`;
+        };
+
+        return {
+            root: rootNote.note,
+            notes: stack.map(n => n.note),
+            names: {
+                3: generateName(3),
+                4: generateName(4),
+                5: generateName(5),
+                6: generateName(6),
+                7: generateName(7),
+            }
+        };
+    });
+};
+
+// --- Audio Engine ---
+
+let audioCtx = null;
+
+const initAudio = () => {
+    if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) audioCtx = new AudioContext();
+    }
+    if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+    return audioCtx;
+};
+
+const playTone = (freq, duration, type = 'sine') => {
+  const ctx = initAudio();
+  if (!ctx) return;
+
+  const osc = ctx.createOscillator();
+  const gainNode = ctx.createGain();
+
+  osc.type = type;
+  osc.frequency.value = freq;
+  
+  gainNode.gain.setValueAtTime(0, ctx.currentTime);
+  gainNode.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 0.05);
+  gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+
+  osc.connect(gainNode);
+  gainNode.connect(ctx.destination);
+  
+  osc.start();
+  osc.stop(ctx.currentTime + duration);
+};
+
+const playGuitarTone = (freq, duration) => {
+  const ctx = initAudio();
+  if (!ctx) return;
+
+  const osc = ctx.createOscillator();
+  const gainNode = ctx.createGain();
+  const filter = ctx.createBiquadFilter();
+
+  osc.type = 'sawtooth';
+  osc.frequency.value = freq;
+
+  filter.type = 'lowpass';
+  filter.frequency.setValueAtTime(3000, ctx.currentTime); 
+  filter.frequency.exponentialRampToValueAtTime(500, ctx.currentTime + 0.2); 
+
+  gainNode.gain.setValueAtTime(0, ctx.currentTime);
+  gainNode.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.02); 
+  gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration); 
+
+  osc.connect(filter);
+  filter.connect(gainNode);
+  gainNode.connect(ctx.destination);
+
+  osc.start();
+  osc.stop(ctx.currentTime + duration);
+};
+
+const getFreq = (noteName, octave = 4) => {
+    const allNotes = [...NOTES_SHARP];
+    let note = noteName;
+    if (note.includes('b')) {
+       const flatIdx = NOTES_FLAT.indexOf(note);
+       if (flatIdx !== -1) note = NOTES_SHARP[flatIdx];
+    }
+    
+    let idx = allNotes.indexOf(note);
+    if (idx === -1) idx = 0; 
+
+    const semitonesFromA4 = idx - allNotes.indexOf('A') + (octave - 4) * 12;
+    return 440 * Math.pow(2, semitonesFromA4 / 12);
+};
+
+const midiToFreq = (midi) => {
+    return 440 * Math.pow(2, (midi - 69) / 12);
+};
+
+// --- Guitar Logic ---
+
+const GUITAR_STRINGS = [
+    { name: 'E', openMidi: 40 }, // Low E
+    { name: 'A', openMidi: 45 },
+    { name: 'D', openMidi: 50 },
+    { name: 'G', openMidi: 55 },
+    { name: 'B', openMidi: 59 },
+    { name: 'e', openMidi: 64 }, // High E
+];
+
+const normalizeNote = (note) => {
+     if (NOTES_FLAT.includes(note)) {
+         return NOTES_SHARP[NOTES_FLAT.indexOf(note)];
+     }
+     return note;
+};
+
+// Library of standard "Cowboy" and Open Chords
+const STANDARD_VOICINGS = {
+    'C_major': [-1, 3, 2, 0, 1, 0],
+    'D_major': [-1, -1, 0, 2, 3, 2],
+    'E_major': [0, 2, 2, 1, 0, 0],
+    'F_major': [1, 3, 3, 2, 1, 1], 
+    'G_major': [3, 2, 0, 0, 0, 3],
+    'A_major': [-1, 0, 2, 2, 2, 0],
+    'B_major': [-1, 2, 4, 4, 4, 2],
+    'C_minor': [-1, 3, 5, 5, 4, 3],
+    'D_minor': [-1, -1, 0, 2, 3, 1],
+    'E_minor': [0, 2, 2, 0, 0, 0],
+    'F_minor': [1, 3, 3, 1, 1, 1],
+    'G_minor': [3, 5, 5, 3, 3, 3],
+    'A_minor': [-1, 0, 2, 2, 1, 0],
+    'B_minor': [-1, 2, 4, 4, 3, 2],
+    'C_7': [-1, 3, 2, 3, 1, 0],
+    'D_7': [-1, -1, 0, 2, 1, 2],
+    'E_7': [0, 2, 0, 1, 0, 0],
+    'F_7': [1, 3, 1, 2, 1, 1],
+    'G_7': [3, 2, 0, 0, 0, 1],
+    'A_7': [-1, 0, 2, 0, 2, 0],
+    'B_7': [-1, 2, 1, 2, 0, 2],
+    'C_maj7': [-1, 3, 2, 0, 0, 0],
+    'D_maj7': [-1, -1, 0, 2, 2, 2],
+    'E_maj7': [0, 2, 1, 1, 0, 0], 
+    'F_maj7': [-1, -1, 3, 2, 1, 0], 
+    'G_maj7': [3, 2, 0, 0, 0, 2],
+    'A_maj7': [-1, 0, 2, 1, 2, 0],
+    'D_m7': [-1, -1, 0, 2, 1, 1],
+    'E_m7': [0, 2, 0, 0, 0, 0], 
+    'A_m7': [-1, 0, 2, 0, 1, 0],
+    'B_m7': [-1, 2, 0, 2, 0, 2]  
+};
+
+const getChordQuality = (notes, root) => {
+    const rootIdx = getNoteIndex(root);
+    const semitones = notes.map(n => (getNoteIndex(n) - rootIdx + 12) % 12);
+    
+    const has3 = semitones.includes(4);
+    const hasb3 = semitones.includes(3);
+    const has7 = semitones.includes(11);
+    const hasb7 = semitones.includes(10);
+    
+    if (has3 && has7) return 'maj7';
+    if (has3 && hasb7) return '7';
+    if (hasb3 && hasb7) return 'm7';
+    if (hasb3) return 'minor';
+    if (has3) return 'major';
+    
+    if (semitones.includes(6) && hasb3) return 'dim'; 
+    
+    return 'major';
+};
+
+const generateGuitarVoicing = (chordNotes, root) => {
+    const normRoot = normalizeNote(root);
+    const quality = getChordQuality(chordNotes, root);
+    const lookupKey = `${normRoot}_${quality}`;
+    
+    if (chordNotes.length <= 4 && STANDARD_VOICINGS[lookupKey]) {
+        return STANDARD_VOICINGS[lookupKey];
+    }
+    
+    if (chordNotes.length <= 4) {
+        const rootIdx = getNoteIndex(root);
+        let eRootFret = (rootIdx - getNoteIndex('E') + 12) % 12;
+        let aRootFret = (rootIdx - getNoteIndex('A') + 12) % 12;
+        
+        const buildBarre = (rootString, fret, type) => {
+            let shape = [];
+            if (rootString === 0) { 
+                 if (type === 'major') shape = [0, 2, 2, 1, 0, 0];
+                 else if (type === 'minor') shape = [0, 2, 2, 0, 0, 0];
+                 else if (type === '7') shape = [0, 2, 0, 1, 0, 0]; 
+                 else if (type === 'm7') shape = [0, 2, 0, 0, 0, 0];
+                 else if (type === 'maj7') shape = [0, 2, 1, 1, 0, 0]; 
+                 else shape = [0, 2, 2, 1, 0, 0];
+            } else { 
+                 if (type === 'major') shape = [-1, 0, 2, 2, 2, 0];
+                 else if (type === 'minor') shape = [-1, 0, 2, 2, 1, 0];
+                 else if (type === '7') shape = [-1, 0, 2, 0, 2, 0];
+                 else if (type === 'm7') shape = [-1, 0, 2, 0, 1, 0];
+                 else if (type === 'maj7') shape = [-1, 0, 2, 1, 2, 0];
+                 else shape = [-1, 0, 2, 2, 2, 0];
+            }
+            return shape.map(s => (s === -1 ? -1 : s + fret));
+        };
+
+        const useAShape = ['A#', 'Bb', 'B', 'C', 'C#', 'Db', 'D', 'D#', 'Eb'].includes(root);
+        if (useAShape) return buildBarre(1, aRootFret, quality);
+        else return buildBarre(0, eRootFret, quality);
+    }
+
+    // Algorithmic Generation
+    const targetPitches = chordNotes.map(n => getNoteIndex(n));
+    const rootPitch = getNoteIndex(root);
+
+    let anchorFret = 0;
+    let lowestStringIdx = 0;
+    let foundBass = false;
+
+    for(let f=0; f<=5; f++) {
+        if ((GUITAR_STRINGS[0].openMidi + f) % 12 === rootPitch) {
+            anchorFret = f;
+            lowestStringIdx = 0;
+            foundBass = true;
+            break;
+        }
+    }
+    if (!foundBass) {
+        for(let f=0; f<=5; f++) {
+            if ((GUITAR_STRINGS[1].openMidi + f) % 12 === rootPitch) {
+                anchorFret = f;
+                lowestStringIdx = 1;
+                foundBass = true;
+                break;
+            }
+        }
+    }
+    if (!foundBass) anchorFret = 0;
+
+    const minFret = anchorFret;
+    const maxFret = Math.max(3, anchorFret + 4); 
+    const voicing = [];
+
+    GUITAR_STRINGS.forEach((string, sIdx) => {
+        if (sIdx < lowestStringIdx) {
+            voicing.push(-1); 
+            return;
+        }
+
+        let bestFret = -1;
+        
+        if (targetPitches.includes((string.openMidi) % 12)) {
+            bestFret = 0;
+        }
+
+        if (sIdx === lowestStringIdx) {
+             voicing.push(anchorFret);
+             return;
+        }
+
+        for (let f = minFret; f <= maxFret; f++) {
+             if (bestFret === 0 && f > 0) continue; 
+             const currentPitch = (string.openMidi + f) % 12;
+             if (targetPitches.includes(currentPitch)) {
+                 bestFret = f;
+                 break; 
+             }
+        }
+        
+        voicing.push(bestFret);
+    });
+
+    return voicing;
+};
+
+// --- Key Signature Data ---
+
+const KEY_SIGS_MAJOR = {
+    'C': { count: 0, type: 'sharp' },
+    'G': { count: 1, type: 'sharp' },
+    'D': { count: 2, type: 'sharp' },
+    'A': { count: 3, type: 'sharp' },
+    'E': { count: 4, type: 'sharp' },
+    'B': { count: 5, type: 'sharp' },
+    'F#': { count: 6, type: 'sharp' },
+    'C#': { count: 7, type: 'sharp' },
+    'F': { count: 1, type: 'flat' },
+    'Bb': { count: 2, type: 'flat' },
+    'Eb': { count: 3, type: 'flat' },
+    'Ab': { count: 4, type: 'flat' },
+    'Db': { count: 5, type: 'flat' },
+    'Gb': { count: 6, type: 'flat' },
+    'Cb': { count: 7, type: 'flat' }
+};
+
+const KEY_SIGS_MINOR = {
+    'A': { count: 0, type: 'sharp' },
+    'E': { count: 1, type: 'sharp' },
+    'B': { count: 2, type: 'sharp' },
+    'F#': { count: 3, type: 'sharp' },
+    'C#': { count: 4, type: 'sharp' },
+    'G#': { count: 5, type: 'sharp' },
+    'D#': { count: 6, type: 'sharp' },
+    'A#': { count: 7, type: 'sharp' },
+    'D': { count: 1, type: 'flat' },
+    'G': { count: 2, type: 'flat' },
+    'C': { count: 3, type: 'flat' },
+    'F': { count: 4, type: 'flat' },
+    'Bb': { count: 5, type: 'flat' },
+    'Eb': { count: 6, type: 'flat' },
+    'Ab': { count: 7, type: 'flat' }
+};
+
+// Enharmonic mapping for theoretical keys (e.g., D# Major -> Eb Major)
+const ENHARMONIC_KEYS = {
+    'D#': 'Eb',
+    'G#': 'Ab',
+    'A#': 'Bb',
+    // Add others if needed for strict display
+};
+
+const getKeySignature = (root, scaleKey) => {
+    // 1. Determine standard Key quality
+    const isMinor = ['natural_minor', 'harmonic_minor', 'melodic_minor', 'dorian', 'phrygian', 'locrian', 'minor_pentatonic', 'blues'].includes(scaleKey);
+    const map = isMinor ? KEY_SIGS_MINOR : KEY_SIGS_MAJOR;
+    
+    // 2. Lookup
+    let sig = map[root];
+    
+    // 3. Fallback/Enharmonic Check
+    if (!sig) {
+        const altRoot = ENHARMONIC_KEYS[root];
+        if (altRoot && map[altRoot]) {
+            sig = map[altRoot];
+        }
+    }
+    
+    return sig || { count: 0, type: 'sharp' };
+};
+
+const KeySignatureDisplay = ({ sig, color }) => {
+    if (!sig || sig.count === 0) return null;
+
+    // Treble Clef Positions
+    const sharpPos = [10, 25, 5, 20, 35, 15, 30]; // Y coords roughly (F, C, G, D, A, E, B)
+    const flatPos = [20, 5, 25, 10, 30, 15, 35]; // B, E, A, D, G, C, F
+
+    const positions = sig.type === 'sharp' ? sharpPos : flatPos;
+    const symbol = sig.type === 'sharp' ? '♯' : '♭';
+    const activePos = positions.slice(0, sig.count);
+
+    return (
+        <div className="flex justify-center items-center h-8 mt-1 overflow-visible">
+            <svg width={Math.max(40, sig.count * 8 + 10)} height="40" viewBox={`0 0 ${Math.max(40, sig.count * 8 + 10)} 40`}>
+                {/* Staff Lines - Mini */}
+                {[10, 15, 20, 25, 30].map(y => (
+                    <line key={y} x1="0" y1={y} x2="100%" y2={y} stroke="#cbd5e1" strokeWidth="1" />
+                ))}
+                
+                {/* Symbols */}
+                {activePos.map((y, i) => (
+                    <text 
+                        key={i} 
+                        x={5 + i * 8} 
+                        y={y + 4} 
+                        fontSize="14" 
+                        className={`fill-${color}-500 font-bold`}
+                        style={{ fontFamily: 'serif' }}
+                    >
+                        {symbol}
+                    </text>
+                ))}
+            </svg>
+        </div>
+    );
+};
+
+// --- Circle of Fifths Component ---
+
+const FIFTHS_ORDER = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'Db', 'Ab', 'Eb', 'Bb', 'F'];
+
+const CircleOfFifths = ({ root, scaleKey, currentNotes, onRootChange, color }) => {
+    // 1. Determine Rotation
+    let normRoot = root;
+    const map = { 'C#': 'Db', 'D#': 'Eb', 'G#': 'Ab', 'A#': 'Bb', 'Gb': 'F#' };
+    if (map[root]) normRoot = map[root];
+
+    // Find index. 
+    let rootIndex = FIFTHS_ORDER.indexOf(normRoot);
+    if (rootIndex === -1) {
+         if (root === 'Gb') rootIndex = FIFTHS_ORDER.indexOf('F#');
+         if (root === 'Cb') rootIndex = FIFTHS_ORDER.indexOf('B');
+    }
+    
+    const rotation = -(rootIndex * 30);
+    
+    const activePitches = currentNotes.map(n => getNoteIndex(n.note));
+    const rootPitch = getNoteIndex(root);
+    
+    // Key Sig
+    const keySig = getKeySignature(root, scaleKey);
+
+    return (
+        <div className="flex flex-col items-center justify-center p-4">
+            <h3 className="text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wide">Circle of Fifths</h3>
+            <div className="relative w-64 h-64">
+                {/* Rotating Container */}
+                <div 
+                    className="w-full h-full transition-transform duration-700 ease-out"
+                    style={{ transform: `rotate(${rotation}deg)` }}
+                >
+                    <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-md">
+                        {FIFTHS_ORDER.map((note, i) => {
+                            // Sector Angle
+                            const startAngle = (i * 30) - 15 - 90; 
+                            const endAngle = (i * 30) + 15 - 90;
+                            
+                            // Coordinates
+                            const x1 = 100 + 100 * Math.cos(startAngle * Math.PI / 180);
+                            const y1 = 100 + 100 * Math.sin(startAngle * Math.PI / 180);
+                            const x2 = 100 + 100 * Math.cos(endAngle * Math.PI / 180);
+                            const y2 = 100 + 100 * Math.sin(endAngle * Math.PI / 180);
+                            
+                            const x1_in = 100 + 60 * Math.cos(startAngle * Math.PI / 180);
+                            const y1_in = 100 + 60 * Math.sin(startAngle * Math.PI / 180);
+                            const x2_in = 100 + 60 * Math.cos(endAngle * Math.PI / 180);
+                            const y2_in = 100 + 60 * Math.sin(endAngle * Math.PI / 180);
+
+                            const d = `
+                                M ${x1} ${y1}
+                                A 100 100 0 0 1 ${x2} ${y2}
+                                L ${x2_in} ${y2_in}
+                                A 60 60 0 0 0 ${x1_in} ${y1_in}
+                                Z
+                            `;
+                            
+                            const notePitch = getNoteIndex(note);
+                            const isNoteActive = activePitches.includes(notePitch);
+                            const isRoot = notePitch === rootPitch;
+                            
+                            const sliceColor = isRoot 
+                                ? 'currentColor' // Will use text color set by parent class
+                                : isNoteActive 
+                                    ? '#e2e8f0' // slate-200
+                                    : '#f8fafc'; // slate-50
+
+                            return (
+                                <g key={note} onClick={(e) => { e.stopPropagation(); onRootChange(note); }} className={`cursor-pointer transition-colors duration-300 ${isRoot ? `text-${color}-500` : 'text-slate-200'}`}>
+                                    <path 
+                                        d={d} 
+                                        fill={sliceColor}
+                                        stroke="white" 
+                                        strokeWidth="1"
+                                        className="pointer-events-auto hover:opacity-80"
+                                    />
+                                    <text
+                                        x={100 + 80 * Math.cos(((i * 30) - 90) * Math.PI / 180)}
+                                        y={100 + 80 * Math.sin(((i * 30) - 90) * Math.PI / 180)}
+                                        textAnchor="middle"
+                                        dominantBaseline="middle"
+                                        className={`text-[10px] font-bold pointer-events-none ${isRoot ? 'fill-white' : isNoteActive ? 'fill-slate-600' : 'fill-slate-300'}`}
+                                        transform={`rotate(${(i * 30) - 90 + (-rotation)} ${100 + 80 * Math.cos(((i * 30) - 90) * Math.PI / 180)} ${100 + 80 * Math.sin(((i * 30) - 90) * Math.PI / 180)})`}
+                                    >
+                                        {note}
+                                    </text>
+                                </g>
+                            );
+                        })}
+                    </svg>
+                    
+                    {/* Inner Center Label */}
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                         <div className={`w-24 h-24 rounded-full bg-white shadow-sm flex flex-col items-center justify-center z-10 border-4 border-${color}-100`}>
+                             <div className="text-center transform translate-y-1">
+                                 <span className={`block text-2xl font-bold text-${color}-600 leading-none`}>{root}</span>
+                                 {/* Key Signature Display */}
+                                 <KeySignatureDisplay sig={keySig} color={color} />
+                             </div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- Components ---
+
+const GuitarTab = ({ chordNotes, root }) => {
+    const frets = generateGuitarVoicing(chordNotes, root);
+
+    return (
+        <div className="w-full max-w-xs mx-auto p-4 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center my-4">
+             <div className="relative w-full h-[140px] flex justify-center">
+                 {/* Strings */}
+                 {GUITAR_STRINGS.map((_, i) => (
+                     <div key={i} className="absolute w-full h-px bg-slate-300" style={{ top: `${20 + i * 20}px` }}></div>
+                 ))}
+                 
+                 {/* Fret Content - Centered vertically */}
+                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                     {frets.map((fret, stringIdx) => (
+                         <div 
+                            key={stringIdx} 
+                            className="absolute flex items-center justify-center" 
+                            style={{ 
+                                top: `${20 + stringIdx * 20}px`, 
+                                transform: 'translateY(-50%)' 
+                            }}
+                         >
+                             {fret === -1 ? (
+                                 <span className="text-slate-300 text-xs font-bold bg-white px-1">x</span>
+                             ) : (
+                                 <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow-sm z-10
+                                    ${fret === 0 ? 'bg-white border border-slate-200 text-slate-700' : 'bg-slate-800 text-white'}
+                                 `}>
+                                     {fret}
+                                 </div>
+                             )}
+                         </div>
+                     ))}
+                 </div>
+
+                 {/* Labels */}
+                 <div className="absolute left-2 top-0 h-full">
+                     {GUITAR_STRINGS.map((s, i) => (
+                         <span 
+                            key={s.name} 
+                            className="absolute text-[10px] text-slate-400 font-bold"
+                            style={{ top: `${20 + i * 20}px`, transform: 'translateY(-50%)' }}
+                         >
+                            {s.name}
+                         </span>
+                     ))}
+                 </div>
+                 
+                 <div className="absolute bottom-1 right-2 text-[10px] text-slate-300 font-bold tracking-widest">
+                     GUITAR
+                 </div>
+             </div>
+        </div>
+    );
+}
+
+const Staff = ({ notes, isChord = false }) => {
+    const staffRef = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+    
+    const getStaffY = (note, octave = 4) => {
+       const letter = note.charAt(0);
+       const stepIndex = staffRef.indexOf(letter);
+       const absStep = stepIndex + (octave * 7);
+       const refStepF5 = staffRef.indexOf('F') + (5 * 7); // 40
+       const diff = refStepF5 - absStep;
+       return 20 + (diff * 5); 
+    };
+
+    let currentOctave = 4;
+    const renderedNotes = notes.map((n, i) => {
+        if (isChord) {
+            if (i > 0) {
+                 const prevLetterIdx = staffRef.indexOf(notes[i-1].note.charAt(0));
+                 const currLetterIdx = staffRef.indexOf(n.note.charAt(0));
+                 if (currLetterIdx <= prevLetterIdx) currentOctave++;
+            }
+        } else {
+            if (i > 0) {
+                const prevIndex = getNoteIndex(notes[i-1].note);
+                const currIndex = getNoteIndex(n.note);
+                if (currIndex < prevIndex) currentOctave++;
+            }
+        }
+        return { ...n, octave: currentOctave, y: getStaffY(n.note, currentOctave) };
+    });
+
+    const minY = Math.min(...renderedNotes.map(n => n.y));
+    const contentHeight = Math.max(120, Math.abs(minY) + 120);
+    const offset = isChord && minY < 20 ? 20 - minY : 0; 
+    const viewHeight = Math.max(120, contentHeight);
+    const viewWidth = isChord ? 200 : Math.max(400, notes.length * 60);
+
+    return (
+        <div className={`w-full overflow-x-auto p-4 bg-white rounded-xl shadow-sm border border-slate-100 min-h-[160px] flex items-center justify-center relative ${isChord ? `max-w-xs mx-auto my-4 border-2 border-slate-100` : ''}`}>
+            {isChord && <div className="absolute top-2 left-2 text-xs font-bold text-slate-400">CHORD</div>}
+            <svg width="100%" height={viewHeight} viewBox={`0 0 ${viewWidth} ${viewHeight}`}>
+                <g transform={`translate(0, ${offset})`}>
+                    {[20, 30, 40, 50, 60].map(y => (
+                        <line key={y} x1="0" y1={y} x2="100%" y2={y} stroke="#94a3b8" strokeWidth="1" />
+                    ))}
+
+                    {!isChord && <text x="10" y="55" fontSize="40" fontFamily="serif" fill="#1e293b">𝄞</text>}
+                    {isChord && <text x="30" y="55" fontSize="40" fontFamily="serif" fill="#1e293b">𝄞</text>}
+
+                    {renderedNotes.map((n, i) => {
+                        const xPos = isChord ? 100 : 60 + i * 50; 
+                        return (
+                            <g key={i} transform={`translate(${xPos}, 0)`}>
+                                {n.y <= 10 && <line x1="-10" y1="10" x2="10" y2="10" stroke="#94a3b8" strokeWidth="1" />}
+                                {n.y <= 0 && <line x1="-10" y1="0" x2="10" y2="0" stroke="#94a3b8" strokeWidth="1" />}
+                                {n.y <= -10 && <line x1="-10" y1="-10" x2="10" y2="-10" stroke="#94a3b8" strokeWidth="1" />}
+                                {n.y >= 70 && <line x1="-10" y1="70" x2="10" y2="70" stroke="#94a3b8" strokeWidth="1" />}
+                                {n.y >= 80 && <line x1="-10" y1="80" x2="10" y2="80" stroke="#94a3b8" strokeWidth="1" />}
+                                
+                                <ellipse cx="0" cy={n.y} rx="8" ry="5.5" fill="white" stroke="#1e293b" strokeWidth="2" transform={`rotate(-15, 0, ${n.y})`} />
+                                
+                                {n.note.includes('#') && <text x="-22" y={n.y + 5} fontSize="16" fill="#1e293b">♯</text>}
+                                {n.note.includes('b') && <text x="-22" y={n.y + 5} fontSize="16" fill="#1e293b">♭</text>}
+                                
+                                {!isChord && <text x="0" y="100" fontSize="10" textAnchor="middle" fill="#64748b" className="font-medium">{n.note}</text>}
+                            </g>
+                        );
+                    })}
+                </g>
+            </svg>
+        </div>
+    );
+};
+
+export default function MusicScaleApp() {
+  const [root, setRoot] = useState('G');
+  const [scaleKey, setScaleKey] = useState('major');
+  const [bpm, setBpm] = useState(75);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playingIndex, setPlayingIndex] = useState(null);
+  
+  const [chordComplexity, setChordComplexity] = useState(4);
+  const [selectedChordIndex, setSelectedChordIndex] = useState(null);
+  
+  const [chordViewMode, setChordViewMode] = useState('staff');
+
+  const notes = getScaleNotes(root, scaleKey);
+  const chords = getDiatonicChords(notes, scaleKey);
+  const color = getKeyColor(root);
+
+  useEffect(() => {
+    setSelectedChordIndex(null);
+  }, [root, scaleKey]);
+
+  const handlePlay = async () => {
+    if (isPlaying) return;
+    setIsPlaying(true);
+    
+    const duration = 60 / bpm; 
+    let currentOctave = 4;
+    
+    for (let i = 0; i < notes.length; i++) {
+        if (i > 0) {
+             const prevIndex = getNoteIndex(notes[i-1].note);
+             const currIndex = getNoteIndex(notes[i].note);
+             if (currIndex < prevIndex) currentOctave++;
+        }
+        
+        setPlayingIndex(i); // Highlight current
+        
+        const freq = getFreq(notes[i].note, currentOctave);
+        playTone(freq, duration * 0.8, 'triangle');
+        await new Promise(r => setTimeout(r, duration * 1000));
+    }
+    
+    // Highlight Final
+    setPlayingIndex(notes.length);
+    playTone(getFreq(root, currentOctave + (getNoteIndex(notes[notes.length-1].note) < getNoteIndex(root) ? 0 : 1)), duration * 1.5, 'triangle');
+    
+    await new Promise(r => setTimeout(r, duration * 1500));
+    setPlayingIndex(null);
+    setIsPlaying(false);
+  };
+
+  const handleChordClick = (index) => {
+      const chord = chords[index];
+      setSelectedChordIndex(index);
+      const notesToPlay = chord.notes.slice(0, chordComplexity);
+      
+      if (chordViewMode === 'guitar') {
+        const voicing = generateGuitarVoicing(notesToPlay, chord.root);
+        
+        voicing.forEach((fret, stringIdx) => {
+            if (fret !== -1) {
+                const midiPitch = GUITAR_STRINGS[stringIdx].openMidi + fret;
+                const freq = midiToFreq(midiPitch);
+                
+                setTimeout(() => {
+                    playGuitarTone(freq, 2.5);
+                }, stringIdx * 40); 
+            }
+        });
+
+      } else {
+        let currentOctave = 4;
+        let prevNoteIndex = -1;
+
+        notesToPlay.forEach((n, i) => {
+             const noteIdx = getNoteIndex(n);
+             if (i > 0) {
+                 if (noteIdx <= prevNoteIndex) {
+                     currentOctave++;
+                 }
+             }
+             prevNoteIndex = noteIdx;
+             setTimeout(() => playTone(getFreq(n, currentOctave), 1.5, 'sine'), i * 30);
+        });
+      }
+  };
+
+  const selectedChord = selectedChordIndex !== null ? chords[selectedChordIndex] : null;
+  const selectedChordNotes = selectedChord ? selectedChord.notes.slice(0, chordComplexity) : [];
+  const selectedChordNotesForStaff = selectedChordNotes.map(n => ({ note: n }));
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-20">
+      
+      {/* Top Bar */}
+      <div className="sticky top-0 bg-white border-b border-slate-200 z-10 px-4 py-3 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-4">
+          <button onClick={() => window.history.back()} className="p-2 hover:bg-slate-100 rounded-full">
+             <ChevronDown className="rotate-90 text-slate-500 w-6 h-6" />
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3">
+            <div className="relative group">
+                <button className={`w-10 h-10 rounded-full bg-${color}-100 text-${color}-700 font-bold flex items-center justify-center border-2 border-${color}-200 hover:bg-${color}-200 transition-colors`}>
+                    {root}
+                </button>
+                <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-xl border border-slate-100 p-2 grid grid-cols-4 gap-1 w-48 hidden group-hover:grid">
+                    {[...new Set([...NOTES_SHARP, ...NOTES_FLAT])].sort().map(n => (
+                        <button key={n} onClick={() => setRoot(n)} className={`p-2 text-sm rounded hover:bg-slate-50 ${root === n ? `bg-${color}-100 text-${color}-700 font-bold` : ''}`}>
+                            {n}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            <button onClick={handlePlay} disabled={isPlaying} className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isPlaying ? `bg-${color}-300` : `bg-${color}-600 hover:bg-${color}-700 text-white shadow-lg shadow-${color}-200`}`}>
+                {isPlaying ? <Volume2 size={20} className="animate-pulse" /> : <Play size={20} className="ml-1" />}
+            </button>
+        </div>
+      </div>
+
+      <main className="max-w-2xl mx-auto px-4 pt-6 space-y-8">
+        
+        {/* BRANDING HEADER */}
+        <div className="flex flex-col items-center text-center mb-4">
+            <div className="h-16 w-16 rounded-2xl overflow-hidden shadow-lg border border-slate-100 bg-white mb-4">
+                 <img
+                    src="logo.jpg"
+                    alt="Logo"
+                    className="h-full w-full object-cover"
+                    onError={(e) => e.target.src='https://ui-avatars.com/api/?name=Scale+Master&background=a855f7&color=fff&size=128'}
+                 />
+            </div>
+            <h1 className="text-3xl font-bold text-slate-900">ScaleMaster</h1>
+            <p className="text-slate-500 text-sm mt-2">Interactive Music Theory Explorer</p>
+            <p className="text-xs text-slate-400 mt-2 font-mono">
+                Created by Carlos David <a href="https://cdcruzher.com" target="_blank" rel="noopener noreferrer" className={`text-${color}-500 hover:text-${color}-600 font-bold transition-colors`}>@cdcruzher</a>
+            </p>
+        </div>
+
+        {/* Header Section */}
+        <section>
+            <div className="flex items-center justify-between mb-2">
+                 <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wide">Current Scale</h2>
+            </div>
+            <div className="flex items-center gap-2">
+                <h1 className="text-3xl font-bold text-slate-800">{root} {SCALES[scaleKey].name}</h1>
+                <div className="relative group">
+                    <button className="p-1 rounded-full hover:bg-slate-100"><Edit3 size={16} className="text-slate-400"/></button>
+                     <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-xl border border-slate-100 p-2 h-64 overflow-y-auto w-56 hidden group-hover:block z-20">
+                        {Object.keys(SCALES).map(k => (
+                            <button key={k} onClick={() => setScaleKey(k)} className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-${color}-50 ${scaleKey === k ? `bg-${color}-100 text-${color}-700 font-bold` : ''}`}>
+                                {SCALES[k].name}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        {/* Circle of Fifths Section */}
+        <section className="flex justify-center">
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                <CircleOfFifths root={root} scaleKey={scaleKey} currentNotes={notes} onRootChange={setRoot} color={color} />
+            </div>
+        </section>
+
+        {/* Structure Visualization */}
+        <section>
+             <div className="flex items-center justify-between mb-4">
+                 <h2 className="text-lg font-bold text-slate-800">Structure</h2>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 overflow-x-auto">
+                <div className="flex items-start min-w-max space-x-1">
+                    {notes.map((note, idx) => {
+                        const isCurrent = idx === playingIndex;
+                        return (
+                            <div key={idx} className="flex flex-col items-center relative group">
+                                <div className={`w-12 h-12 rounded-full flex flex-col items-center justify-center text-xs mb-3 z-10 transition-all duration-300 
+                                    ${isCurrent 
+                                        ? `bg-${color}-500 text-white scale-110 shadow-lg ring-4 ring-${color}-200` 
+                                        : (idx === 0 ? `bg-${color}-200 text-${color}-900 font-bold` : `bg-${color}-100 text-${color}-800`)
+                                    }`}>
+                                    <span className="font-bold text-sm">{note.intervalName}</span>
+                                    <span className="text-[10px] opacity-60">{note.semitonesFromRoot}</span>
+                                </div>
+                                
+                                <div className="text-lg font-bold text-slate-700 mb-1">{note.note}</div>
+                                <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-xs font-bold">
+                                    {note.degree}
+                                </div>
+                            </div>
+                        );
+                    })}
+                    
+                    <div className={`flex flex-col items-center relative ml-[-10px] transition-all duration-300 ${playingIndex === notes.length ? 'opacity-100 scale-105' : 'opacity-50'}`}>
+                        <div className={`w-12 h-12 rounded-full border flex flex-col items-center justify-center text-xs mb-3 transition-colors duration-300
+                            ${playingIndex === notes.length ? `bg-${color}-500 text-white border-transparent shadow-lg ring-4 ring-${color}-200` : 'bg-slate-50 border-slate-200 text-slate-500'}
+                        `}>
+                             <span className="font-bold">P8</span>
+                        </div>
+                        <div className="text-lg font-bold text-slate-300 mb-1">{root}</div>
+                         <div className="w-6 h-6 rounded-full bg-slate-50 text-slate-300 flex items-center justify-center text-xs font-bold">8</div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        {/* Staff Section (Scale) */}
+        <section>
+            <div className="flex items-center justify-between mb-4">
+                 <h2 className="text-lg font-bold text-slate-800">Staff</h2>
+            </div>
+            <Staff notes={notes} />
+        </section>
+
+        {/* Harmonization Section */}
+        <section className="pb-10 relative">
+            <div className="flex flex-col mb-4">
+                 <div className="flex items-center justify-between mb-2">
+                     <h2 className="text-lg font-bold text-slate-800">Harmonization</h2>
+                 </div>
+                 
+                 <div className="flex overflow-x-auto gap-1 bg-slate-100 rounded-lg p-1">
+                     {[3, 4, 5, 6, 7].map(num => (
+                         <button 
+                            key={num}
+                            onClick={() => setChordComplexity(num)} 
+                            className={`flex-1 min-w-[60px] px-3 py-1 text-xs font-bold rounded-md transition-all whitespace-nowrap
+                                ${chordComplexity === num ? `bg-white text-${color}-700 shadow-sm ring-1 ring-${color}-100` : 'text-slate-500 hover:text-slate-700'}`}
+                         >
+                            {num === 3 ? 'Triads' : num === 4 ? '7th' : num === 5 ? '9th' : num === 6 ? '11th' : '13th'}
+                         </button>
+                     ))}
+                 </div>
+            </div>
+
+            {/* Selected Chord Visualization */}
+            {selectedChord && (
+                <div className="mb-6 animate-in slide-in-from-bottom-2 duration-300">
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                            <span className={`text-sm font-bold text-${color}-600`}>
+                                {selectedChord.names[chordComplexity]}
+                            </span>
+                            {/* Toggle for Tab/Staff */}
+                            <div className="flex bg-slate-100 rounded-md p-0.5">
+                                <button onClick={() => setChordViewMode('staff')} className={`px-2 py-0.5 rounded text-[10px] font-bold ${chordViewMode === 'staff' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400'}`}>Staff</button>
+                                <button onClick={() => setChordViewMode('guitar')} className={`px-2 py-0.5 rounded text-[10px] font-bold ${chordViewMode === 'guitar' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400'}`}>Guitar</button>
+                            </div>
+                        </div>
+                        <button onClick={() => setSelectedChordIndex(null)} className="text-slate-400 hover:text-slate-600"><X size={16}/></button>
+                    </div>
+                    
+                    {chordViewMode === 'staff' ? (
+                        <Staff notes={selectedChordNotesForStaff} isChord={true} />
+                    ) : (
+                        <GuitarTab chordNotes={selectedChordNotes} root={selectedChord.root} />
+                    )}
+                </div>
+            )}
+
+            {chords.length > 0 ? (
+                <div className="grid grid-cols-4 gap-3">
+                    {chords.map((chord, i) => (
+                        <button key={i} 
+                            onClick={() => handleChordClick(i)}
+                            className={`transition-all border rounded-xl p-2 flex flex-col items-center justify-center min-h-[80px] relative overflow-hidden
+                            ${selectedChordIndex === i ? `bg-${color}-100 border-${color}-300 ring-2 ring-${color}-200` : `bg-${color}-50 hover:bg-${color}-100 border-${color}-100 active:scale-95`}
+                            `}
+                        >
+                            <span className="text-[10px] font-bold text-slate-400 mb-1">{['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'][i]}</span>
+                            <span className={`font-bold text-slate-700 text-center leading-tight ${chord.names[chordComplexity].length > 5 ? 'text-xs' : 'text-sm'}`}>
+                                {chord.names[chordComplexity]}
+                            </span>
+                        </button>
+                    ))}
+                </div>
+            ) : (
+                <div className="text-center p-8 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-slate-400">
+                    Harmonization not available for this scale type.
+                </div>
+            )}
+        </section>
+
+        {/* DONATION FOOTER */}
+        <div className="mt-12 pt-8 border-t border-slate-200 flex flex-col items-center pb-8">
+            <p className="text-xs text-slate-400 mb-4 uppercase tracking-wider font-semibold">Support the Project</p>
+            <a href="https://www.paypal.com/donate/?business=6EN68NHUTM2KQ&no_recurring=0&item_name=Thanks+for+your+support+Amigo%21&currency_code=USD" target="_blank" rel="noopener noreferrer" className="block w-32 h-32 bg-white p-2 rounded-xl border border-slate-200 hover:shadow-lg hover:scale-105 transition-all cursor-pointer" title="Scan or Click to Donate">
+                <img 
+                    src="qrcode.jpg" 
+                    alt="Donate QR Code"
+                    className="w-full h-full object-contain"
+                    onError={(e) => e.target.src='https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https%3A%2F%2Fwww.paypal.com%2Fdonate%2F%3Fbusiness%3D6EN68NHUTM2KQ%26no_recurring%3D0%26item_name%3DThanks%2Bfor%2Byour%2Bsupport%2BAmigo%21%26currency_code%3DUSD'}
+                />
+            </a>
+            <p className="text-[10px] text-slate-400 mt-3 text-center">Scan or click to donate via PayPal</p>
+        </div>
+
+      </main>
+    </div>
+  );
+}
+
+
