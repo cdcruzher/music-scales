@@ -411,12 +411,12 @@
                                     );
                                 })}
                             </svg>
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <div className={`w-24 h-24 rounded-full bg-white shadow-sm flex flex-col items-center justify-center z-10 border-4 border-${color}-100`}>
-                                    <div className="text-center transform translate-y-1">
-                                        <span className={`block text-2xl font-bold text-${color}-600 leading-none`}>{root}</span>
-                                        <KeySignatureDisplay sig={keySig} color={color} />
-                                    </div>
+                        </div>
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div className={`w-24 h-24 rounded-full bg-white shadow-sm flex flex-col items-center justify-center z-10 border-4 border-${color}-100`}>
+                                <div className="text-center transform translate-y-1">
+                                    <span className={`block text-2xl font-bold text-${color}-600 leading-none`}>{root}</span>
+                                    <KeySignatureDisplay sig={keySig} color={color} />
                                 </div>
                             </div>
                         </div>
