@@ -49,6 +49,7 @@
 
         // --- MASSIVE SCALE DATABASE ---
         const SCALES = {
+            // Standard Major Modes
             major: { name: 'Major (Ionian)', intervals: [0, 2, 4, 5, 7, 9, 11], steps: [2, 2, 1, 2, 2, 2, 1] },
             dorian: { name: 'Dorian', intervals: [0, 2, 3, 5, 7, 9, 10], steps: [2, 1, 2, 2, 2, 1, 2] },
             phrygian: { name: 'Phrygian', intervals: [0, 1, 3, 5, 7, 8, 10], steps: [1, 2, 2, 2, 1, 2, 2] },
@@ -56,15 +57,81 @@
             mixolydian: { name: 'Mixolydian', intervals: [0, 2, 4, 5, 7, 9, 10], steps: [2, 2, 1, 2, 2, 1, 2] },
             natural_minor: { name: 'Natural Minor (Aeolian)', intervals: [0, 2, 3, 5, 7, 8, 10], steps: [2, 1, 2, 2, 1, 2, 2] },
             locrian: { name: 'Locrian', intervals: [0, 1, 3, 5, 6, 8, 10], steps: [1, 2, 2, 1, 2, 2, 2] },
+
+            // Melodic Minor Modes
             melodic_minor: { name: 'Melodic Minor', intervals: [0, 2, 3, 5, 7, 9, 11], steps: [2, 1, 2, 2, 2, 2, 1] },
+            dorian_b2: { name: 'Dorian b2 (Phrygian #6)', intervals: [0, 1, 3, 5, 7, 9, 10], steps: [1, 2, 2, 2, 2, 1, 2] },
+            lydian_augmented: { name: 'Lydian Augmented', intervals: [0, 2, 4, 6, 8, 9, 11], steps: [2, 2, 2, 2, 1, 2, 1] },
+            lydian_dominant: { name: 'Lydian Dominant', intervals: [0, 2, 4, 6, 7, 9, 10], steps: [2, 2, 2, 1, 2, 1, 2] },
+            mixolydian_b6: { name: 'Mixolydian b6', intervals: [0, 2, 4, 5, 7, 8, 10], steps: [2, 2, 1, 2, 1, 2, 2] },
+            locrian_sharp2: { name: 'Locrian #2', intervals: [0, 2, 3, 5, 6, 8, 10], steps: [2, 1, 2, 1, 2, 2, 2] },
+            altered: { name: 'Altered (Super Locrian)', intervals: [0, 1, 3, 4, 6, 8, 10], steps: [1, 2, 1, 2, 2, 2, 2] },
+
+            // Harmonic Minor Modes
             harmonic_minor: { name: 'Harmonic Minor', intervals: [0, 2, 3, 5, 7, 8, 11], steps: [2, 1, 2, 2, 1, 3, 1] },
+            locrian_natural6: { name: 'Locrian ♮6', intervals: [0, 1, 3, 5, 6, 9, 10], steps: [1, 2, 2, 1, 3, 1, 2] },
+            ionian_sharp5: { name: 'Ionian #5', intervals: [0, 2, 4, 5, 8, 9, 11], steps: [2, 2, 1, 3, 1, 2, 1] },
+            dorian_sharp4: { name: 'Dorian #4', intervals: [0, 2, 3, 6, 7, 9, 10], steps: [2, 1, 3, 1, 2, 1, 2] },
+            phrygian_dominant: { name: 'Phrygian Dominant', intervals: [0, 1, 4, 5, 7, 8, 10], steps: [1, 3, 1, 2, 1, 2, 2] },
+            lydian_sharp2: { name: 'Lydian #2', intervals: [0, 3, 4, 6, 7, 9, 11], steps: [3, 1, 2, 1, 2, 2, 1] },
+            ultralocrian: { name: 'Ultralocrian', intervals: [0, 1, 3, 4, 6, 8, 9], steps: [1, 2, 1, 2, 2, 1, 3] },
+
+            // Harmonic Major Modes
+            harmonic_major: { name: 'Harmonic Major', intervals: [0, 2, 4, 5, 7, 8, 11], steps: [2, 2, 1, 2, 1, 3, 1] },
+            dorian_b5: { name: 'Dorian b5', intervals: [0, 2, 3, 5, 6, 9, 10], steps: [2, 1, 2, 1, 3, 1, 2] },
+            phrygian_b4: { name: 'Phrygian b4', intervals: [0, 1, 3, 4, 7, 8, 10], steps: [1, 2, 1, 3, 1, 2, 2] },
+            lydian_b3: { name: 'Lydian b3', intervals: [0, 2, 3, 6, 7, 9, 11], steps: [2, 1, 3, 1, 2, 2, 1] },
+            mixolydian_b2: { name: 'Mixolydian b2', intervals: [0, 1, 4, 5, 7, 9, 10], steps: [1, 3, 1, 2, 2, 1, 2] },
+            lydian_aug_sharp2: { name: 'Lydian Aug #2', intervals: [0, 3, 4, 6, 8, 9, 11], steps: [3, 1, 2, 2, 1, 2, 1] },
+            locrian_bb7: { name: 'Locrian bb7', intervals: [0, 1, 3, 5, 6, 8, 9], steps: [1, 2, 2, 1, 2, 1, 3] },
+
+            // Double Harmonic Modes
+            double_harmonic: { name: 'Double Harmonic Major', intervals: [0, 1, 4, 5, 7, 8, 11], steps: [1, 3, 1, 2, 1, 3, 1] },
+            lydian_sharp2_sharp6: { name: 'Lydian #2 #6', intervals: [0, 3, 4, 6, 7, 10, 11], steps: [3, 1, 2, 1, 3, 1, 1] },
+            ultraphrygian: { name: 'Ultraphrygian', intervals: [0, 1, 3, 4, 7, 8, 9], steps: [1, 2, 1, 3, 1, 1, 3] },
+            hungarian_minor: { name: 'Hungarian Minor', intervals: [0, 2, 3, 6, 7, 8, 11], steps: [2, 1, 3, 1, 1, 3, 1] },
+            oriental: { name: 'Oriental', intervals: [0, 1, 4, 5, 6, 9, 10], steps: [1, 3, 1, 1, 3, 1, 2] },
+            ionian_aug_sharp2: { name: 'Ionian Aug #2', intervals: [0, 3, 4, 5, 8, 9, 11], steps: [3, 1, 1, 3, 1, 2, 1] },
+            locrian_bb3_bb7: { name: 'Locrian bb3 bb7', intervals: [0, 1, 2, 5, 6, 8, 9], steps: [1, 1, 3, 1, 2, 1, 3] },
+
+            // Pentatonic Scales
             major_pentatonic: { name: 'Major Pentatonic', intervals: [0, 2, 4, 7, 9], steps: [2, 2, 3, 2, 3] },
             minor_pentatonic: { name: 'Minor Pentatonic', intervals: [0, 3, 5, 7, 10], steps: [3, 2, 2, 3, 2] },
-            blues: { name: 'Blues', intervals: [0, 3, 5, 6, 7, 10], steps: [3, 2, 1, 1, 3, 2] },
-            whole_tone: { name: 'Whole Tone', intervals: [0, 2, 4, 6, 8, 10], steps: [2, 2, 2, 2, 2, 2] },
-            diminished_hw: { name: 'Diminished (H-W)', intervals: [0, 1, 3, 4, 6, 7, 9, 10], steps: [1, 2, 1, 2, 1, 2, 1, 2] },
-            spanish_eight_tone: { name: 'Spanish 8-Tone', intervals: [0, 1, 3, 4, 5, 6, 8, 10], steps: [1, 2, 1, 1, 1, 2, 2, 2] },
+            egyptian: { name: 'Egyptian Pentatonic', intervals: [0, 2, 5, 7, 10], steps: [2, 3, 2, 3, 2] },
+            ritusen: { name: 'Ritusen (Man Gong)', intervals: [0, 2, 5, 7, 9], steps: [2, 3, 2, 2, 3] },
             hirajoshi: { name: 'Hirajoshi', intervals: [0, 2, 3, 7, 8], steps: [2, 1, 4, 1, 4] },
+            in_sen: { name: 'In Sen', intervals: [0, 1, 5, 7, 10], steps: [1, 4, 2, 3, 2] },
+            iwato: { name: 'Iwato', intervals: [0, 1, 5, 6, 10], steps: [1, 4, 1, 4, 2] },
+            yo_scale: { name: 'Yo Scale', intervals: [0, 2, 5, 7, 9], steps: [2, 3, 2, 2, 3] },
+            balinese: { name: 'Balinese', intervals: [0, 1, 3, 7, 8], steps: [1, 2, 4, 1, 4] },
+            pelog: { name: 'Pelog', intervals: [0, 1, 3, 7, 8], steps: [1, 2, 4, 1, 4] },
+            kumoi: { name: 'Kumoi', intervals: [0, 2, 3, 7, 9], steps: [2, 1, 4, 2, 3] },
+
+            // Blues & Bebop
+            blues: { name: 'Blues', intervals: [0, 3, 5, 6, 7, 10], steps: [3, 2, 1, 1, 3, 2] },
+            bebop_dominant: { name: 'Bebop Dominant', intervals: [0, 2, 4, 5, 7, 9, 10, 11], steps: [2, 2, 1, 2, 2, 1, 1, 1] },
+            bebop_major: { name: 'Bebop Major', intervals: [0, 2, 4, 5, 7, 8, 9, 11], steps: [2, 2, 1, 2, 1, 1, 2, 1] },
+            bebop_minor: { name: 'Bebop Minor', intervals: [0, 2, 3, 4, 5, 7, 9, 10], steps: [2, 1, 1, 1, 2, 2, 1, 2] },
+            bebop_dorian: { name: 'Bebop Dorian', intervals: [0, 2, 3, 4, 5, 7, 9, 10], steps: [2, 1, 1, 1, 2, 2, 1, 2] },
+
+            // Symmetric & Exotic
+            whole_tone: { name: 'Whole Tone', intervals: [0, 2, 4, 6, 8, 10], steps: [2, 2, 2, 2, 2, 2] },
+            diminished_wh: { name: 'Diminished (W-H)', intervals: [0, 2, 3, 5, 6, 8, 9, 11], steps: [2, 1, 2, 1, 2, 1, 2, 1] },
+            diminished_hw: { name: 'Diminished (H-W)', intervals: [0, 1, 3, 4, 6, 7, 9, 10], steps: [1, 2, 1, 2, 1, 2, 1, 2] },
+            augmented: { name: 'Augmented', intervals: [0, 3, 4, 7, 8, 11], steps: [3, 1, 3, 1, 3, 1] },
+            prometheus: { name: 'Prometheus', intervals: [0, 2, 4, 6, 9, 10], steps: [2, 2, 2, 3, 1, 2] },
+            tritone: { name: 'Tritone', intervals: [0, 1, 4, 6, 7, 10], steps: [1, 3, 2, 1, 3, 2] },
+            two_semitone_tritone: { name: 'Two-Semitone Tritone', intervals: [0, 1, 2, 6, 7, 8], steps: [1, 1, 4, 1, 1, 4] },
+            enigmatic: { name: 'Enigmatic', intervals: [0, 1, 4, 6, 8, 10, 11], steps: [1, 3, 2, 2, 2, 1, 1] },
+            persian: { name: 'Persian', intervals: [0, 1, 4, 5, 6, 8, 11], steps: [1, 3, 1, 1, 2, 3, 1] },
+            neapolitan_major: { name: 'Neapolitan Major', intervals: [0, 1, 3, 5, 7, 9, 11], steps: [1, 2, 2, 2, 2, 2, 1] },
+            neapolitan_minor: { name: 'Neapolitan Minor', intervals: [0, 1, 3, 5, 7, 8, 11], steps: [1, 2, 2, 2, 1, 3, 1] },
+            hungarian_major: { name: 'Hungarian Major', intervals: [0, 3, 4, 6, 7, 9, 10], steps: [3, 1, 2, 1, 2, 1, 2] },
+            arabian: { name: 'Arabian', intervals: [0, 2, 4, 5, 6, 8, 10], steps: [2, 2, 1, 1, 2, 2, 2] },
+            byzantine: { name: 'Byzantine', intervals: [0, 1, 4, 5, 7, 8, 11], steps: [1, 3, 1, 2, 1, 3, 1] },
+            jewish: { name: 'Jewish (Ahava Raba)', intervals: [0, 1, 4, 5, 7, 8, 10], steps: [1, 3, 1, 2, 1, 2, 2] },
+            spanish_eight_tone: { name: 'Spanish 8-Tone', intervals: [0, 1, 3, 4, 5, 6, 8, 10], steps: [1, 2, 1, 1, 1, 2, 2, 2] },
+            ukrainian_dorian: { name: 'Ukrainian Dorian', intervals: [0, 2, 3, 6, 7, 9, 10], steps: [2, 1, 3, 1, 2, 1, 2] }
         };
 
         const INTERVAL_NAMES = { 0: 'P1', 1: 'm2', 2: 'M2', 3: 'm3', 4: 'M3', 5: 'P4', 6: 'd5/A4', 7: 'P5', 8: 'm6', 9: 'M6', 10: 'm7', 11: 'M7', 12: 'P8' };
@@ -376,51 +443,31 @@
 
         const ScaleTablature = ({ notes, root }) => {
             const tabNotes = useMemo(() => {
-                // Determine Anchor Fret (Root position on Low E)
                 const rootIdx = getNoteIndex(root);
                 let anchorFret = -1;
-                // Find root on Low E string
-                for(let f=0; f<=12; f++) {
-                    if ((GUITAR_STRINGS[0].openMidi + f) % 12 === rootIdx) {
-                        anchorFret = f;
-                        break;
-                    }
-                }
+                for(let f=0; f<=12; f++) { if ((GUITAR_STRINGS[0].openMidi + f) % 12 === rootIdx) { anchorFret = f; break; } }
                 
-                // Box Constraints: Create a 5-fret box starting from anchor
+                // Box Constraints
                 const minFret = anchorFret;
                 const maxFret = anchorFret + 4;
                 const rootMidi = GUITAR_STRINGS[0].openMidi + anchorFret;
 
                 return notes.map((n, i) => {
-                    // Re-calculate MIDI relative to the low guitar root to force "full neck" usage
                     const targetMidi = rootMidi + n.semitonesFromRoot;
                     let bestString = -1;
                     let bestFret = -1;
 
-                    // Scan strings to find a position inside the box
                     for (let s = 0; s < GUITAR_STRINGS.length; s++) {
                         const stringOpen = GUITAR_STRINGS[s].openMidi;
                         const fret = targetMidi - stringOpen;
-
                         if (fret >= 0 && fret <= 24) {
-                            // Logic: Prioritize staying in box, but allow open strings if low on neck
                             const inBox = (fret >= minFret && fret <= maxFret);
                             const isOpen = (fret === 0 && minFret <= 3);
-
                             if (inBox || isOpen) {
-                                // If multiple strings work, prefer the one with the lowest fret number implies moving UP strings
-                                // Actually, we just want valid positions. 
-                                // Taking the first valid match usually fills E -> A -> D -> G naturally.
-                                if (bestFret === -1) {
-                                    bestString = s;
-                                    bestFret = fret;
-                                }
+                                if (bestFret === -1) { bestString = s; bestFret = fret; }
                             }
                         }
                     }
-                    
-                    // Fallback: If no note in box, find closest
                     if (bestFret === -1) {
                         let minDist = 999;
                         for (let s = 0; s < GUITAR_STRINGS.length; s++) {
@@ -431,7 +478,6 @@
                              }
                         }
                     }
-
                     return { ...n, string: bestString, fret: bestFret };
                 });
             }, [notes, root]);
