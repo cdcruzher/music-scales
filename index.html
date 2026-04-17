@@ -794,6 +794,7 @@
             const [selectedChordIndex, setSelectedChordIndex] = useState(null);
             const [chordViewMode, setChordViewMode] = useState('staff');
             const [isScaleMenuOpen, setIsScaleMenuOpen] = useState(false);
+            const [isRootMenuOpen, setIsRootMenuOpen] = useState(false); // Nuevo estado para selector de raíz
             const [searchTerm, setSearchTerm] = useState('');
 
             // Estado Premium & I18N
@@ -813,7 +814,10 @@
             }, [searchTerm, lang]);
             
             useEffect(() => {
-                const closeMenu = (e) => { if (!e.target.closest('.scale-selector')) setIsScaleMenuOpen(false); };
+                const closeMenu = (e) => { 
+                    if (!e.target.closest('.scale-selector')) setIsScaleMenuOpen(false); 
+                    if (!e.target.closest('.root-selector')) setIsRootMenuOpen(false);
+                };
                 document.addEventListener('click', closeMenu);
                 return () => document.removeEventListener('click', closeMenu);
             }, []);
@@ -881,11 +885,13 @@
                                     <span>{lang === 'en' ? 'ES' : 'EN'}</span>
                                 </button>
 
-                                <div className="relative group">
-                                    <button className={`w-10 h-10 rounded-full bg-${color}-100 text-${color}-700 font-bold flex items-center justify-center border-2 border-${color}-200 hover:bg-${color}-200 transition-colors`}>{root}</button>
-                                    <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-xl border border-slate-100 p-2 grid grid-cols-4 gap-1 w-48 hidden group-hover:grid">
-                                        {['C', 'C#', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'].map(n => <button key={n} onClick={() => setRoot(n)} className={`p-2 text-sm rounded hover:bg-slate-50 ${root === n ? `bg-${color}-100 text-${color}-700 font-bold` : ''}`}>{n}</button>)}
-                                    </div>
+                                <div className="relative root-selector">
+                                    <button onClick={() => setIsRootMenuOpen(!isRootMenuOpen)} className={`w-10 h-10 rounded-full bg-${color}-100 text-${color}-700 font-bold flex items-center justify-center border-2 border-${color}-200 hover:bg-${color}-200 transition-colors`}>{root}</button>
+                                    {isRootMenuOpen && (
+                                        <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-xl border border-slate-100 p-2 grid grid-cols-4 gap-1 w-48 z-50">
+                                            {['C', 'C#', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'].map(n => <button key={n} onClick={() => { setRoot(n); setIsRootMenuOpen(false); }} className={`p-2 text-sm rounded hover:bg-slate-50 ${root === n ? `bg-${color}-100 text-${color}-700 font-bold` : ''}`}>{n}</button>)}
+                                        </div>
+                                    )}
                                 </div>
                                 <button onClick={handlePlay} disabled={isPlaying} className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isPlaying ? `bg-${color}-300` : `bg-${color}-600 hover:bg-${color}-700 text-white shadow-lg shadow-${color}-200`}`}>{isPlaying ? <Volume2 size={20} className="animate-pulse" /> : <Play size={20} className="ml-1" />}</button>
                             </div>
