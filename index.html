@@ -41,15 +41,184 @@
         const Volume2 = (p) => <IconBase {...p}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></IconBase>;
         const X = (p) => <IconBase {...p}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></IconBase>;
         const Search = (p) => <IconBase {...p}><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></IconBase>;
+        const Lock = (p) => <IconBase {...p}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></IconBase>;
+        const Unlock = (p) => <IconBase {...p}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></IconBase>;
+        const Star = (p) => <IconBase {...p}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></IconBase>;
+        const Globe = (p) => <IconBase {...p}><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></IconBase>;
 
-        // --- DATA & LOGIC ---
+        // --- I18N DICTIONARY ---
+        const TRANSLATIONS = {
+            en: {
+                subtitle: "Interactive Music Theory Explorer",
+                createdBy: "Created by",
+                selectedScale: "Selected Scale",
+                changeScale: "Change Scale Type",
+                searchPlaceholder: "Find a scale (e.g. 'blues', 'locrian')...",
+                noScales: "No scales found.",
+                circleOfFifths: "Circle of Fifths",
+                intervallicStructure: "Intervallic Structure",
+                notationTab: "Notation & Tablature",
+                chord: "CHORD",
+                guitarTabBox: "GUITAR TAB (Full Box Pattern)",
+                guitar: "GUITAR",
+                playBox: "Play Box",
+                playing: "Playing...",
+                diatonicHarmonization: "Diatonic Harmonization",
+                triads: "Triads",
+                staff: "Staff",
+                harmonizationUnavailable: "Harmonization not available for this scale type (Requires 7-note diatonic scale).",
+                supportProject: "Support the Project",
+                scanDonate: "Scan or click to donate via PayPal",
+                unlockPremium: "Unlock Premium",
+                premiumDesc: "Get unlimited access to over 40 exotic scales, advanced modes, and complex harmonization tools.",
+                getPremium: "Get Premium (Demo)",
+                maybeLater: "Maybe later"
+            },
+            es: {
+                subtitle: "Explorador Interactivo de Teoría Musical",
+                createdBy: "Creado por",
+                selectedScale: "Escala Seleccionada",
+                changeScale: "Cambiar Tipo de Escala",
+                searchPlaceholder: "Buscar escala (ej. 'blues', 'locrian')...",
+                noScales: "No se encontraron escalas.",
+                circleOfFifths: "Círculo de Quintas",
+                intervallicStructure: "Estructura Interválica",
+                notationTab: "Notación y Tablatura",
+                chord: "ACORDE",
+                guitarTabBox: "TABLATURA (Patrón de Caja)",
+                guitar: "GUITARRA",
+                playBox: "Tocar Caja",
+                playing: "Tocando...",
+                diatonicHarmonization: "Armonización Diatónica",
+                triads: "Tríadas",
+                staff: "Pentagrama",
+                harmonizationUnavailable: "Armonización no disponible para este tipo de escala (Requiere escala diatónica de 7 notas).",
+                supportProject: "Apoya el Proyecto",
+                scanDonate: "Escanea o haz clic para donar vía PayPal",
+                unlockPremium: "Desbloquea Premium",
+                premiumDesc: "Obtén acceso ilimitado a más de 40 escalas exóticas, modos avanzados y herramientas de armonización complejas.",
+                getPremium: "Obtener Premium (Demo)",
+                maybeLater: "Quizás más tarde"
+            }
+        };
+
+        const SCALE_NAMES_ES = {
+            'Major (Ionian)': 'Mayor (Jónica)',
+            'Dorian': 'Dórica',
+            'Phrygian': 'Frigia',
+            'Lydian': 'Lidia',
+            'Mixolydian': 'Mixolidia',
+            'Natural Minor (Aeolian)': 'Menor Natural (Eólica)',
+            'Locrian': 'Locria',
+            'Melodic Minor': 'Menor Melódica',
+            'Dorian b2 (Phrygian #6)': 'Dórica b2 (Frigia #6)',
+            'Lydian Augmented': 'Lidia Aumentada',
+            'Lydian Dominant': 'Lidia Dominante',
+            'Mixolydian b6': 'Mixolidia b6',
+            'Locrian #2': 'Locria #2',
+            'Altered (Super Locrian)': 'Alterada (Súper Locria)',
+            'Harmonic Minor': 'Menor Armónica',
+            'Locrian ♮6': 'Locria ♮6',
+            'Ionian #5': 'Jónica #5',
+            'Dorian #4': 'Dórica #4',
+            'Phrygian Dominant': 'Frigia Dominante',
+            'Lydian #2': 'Lidia #2',
+            'Ultralocrian': 'Ultralocria',
+            'Harmonic Major': 'Mayor Armónica',
+            'Dorian b5': 'Dórica b5',
+            'Phrygian b4': 'Frigia b4',
+            'Lydian b3': 'Lidia b3',
+            'Mixolydian b2': 'Mixolidia b2',
+            'Lydian Aug #2': 'Lidia Aum #2',
+            'Locrian bb7': 'Locria bb7',
+            'Double Harmonic Major': 'Mayor Doble Armónica',
+            'Lydian #2 #6': 'Lidia #2 #6',
+            'Ultraphrygian': 'Ultrafrigia',
+            'Hungarian Minor': 'Menor Húngara',
+            'Oriental': 'Oriental',
+            'Ionian Aug #2': 'Jónica Aum #2',
+            'Locrian bb3 bb7': 'Locria bb3 bb7',
+            'Major Pentatonic': 'Pentatónica Mayor',
+            'Minor Pentatonic': 'Pentatónica Menor',
+            'Egyptian Pentatonic': 'Pentatónica Egipcia',
+            'Ritusen (Man Gong)': 'Ritusen (Man Gong)',
+            'Hirajoshi': 'Hirajoshi',
+            'In Sen': 'In Sen',
+            'Iwato': 'Iwato',
+            'Yo Scale': 'Escala Yo',
+            'Balinese': 'Balinesa',
+            'Pelog': 'Pelog',
+            'Kumoi': 'Kumoi',
+            'Blues': 'Blues',
+            'Bebop Dominant': 'Bebop Dominante',
+            'Bebop Major': 'Bebop Mayor',
+            'Bebop Minor': 'Bebop Menor',
+            'Bebop Dorian': 'Bebop Dórica',
+            'Whole Tone': 'Tonos Enteros',
+            'Diminished (W-H)': 'Disminuida (T-S)',
+            'Diminished (H-W)': 'Disminuida (S-T)',
+            'Augmented': 'Aumentada',
+            'Prometheus': 'Prometeo',
+            'Tritone': 'Tritono',
+            'Two-Semitone Tritone': 'Dos-Semitonos Tritono',
+            'Enigmatic': 'Enigmática',
+            'Persian': 'Persa',
+            'Neapolitan Major': 'Mayor Napolitana',
+            'Neapolitan Minor': 'Menor Napolitana',
+            'Hungarian Major': 'Mayor Húngara',
+            'Arabian': 'Árabe',
+            'Byzantine': 'Bizantina',
+            'Jewish (Ahava Raba)': 'Judía (Ahava Raba)',
+            'Spanish 8-Tone': 'Española 8-Tonos',
+            'Ukrainian Dorian': 'Dórica Ucraniana'
+        };
+
+        const translateScaleName = (name, lang) => {
+            if (lang === 'en') return name;
+            return SCALE_NAMES_ES[name] || name;
+        };
+
+        // --- CORE MUSIC THEORY ENGINE ---
 
         const NOTES_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
         const NOTES_FLAT = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
 
-        // --- MASSIVE SCALE DATABASE ---
+        const LETTERS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+        const LETTER_PITCHES = [0, 2, 4, 5, 7, 9, 11];
+
+        // Decodificador de Notación
+        const parseNote = (noteName) => {
+            const letter = noteName.charAt(0);
+            const letterIdx = LETTERS.indexOf(letter);
+            let alt = 0;
+            if (noteName.includes('bb')) alt = -2;
+            else if (noteName.includes('b')) alt = -1;
+            else if (noteName.includes('x')) alt = 2;
+            else if (noteName.includes('#')) alt = 1;
+            const pitch = (LETTER_PITCHES[letterIdx] + alt + 12) % 12;
+            return { letter, letterIdx, alt, pitch };
+        };
+
+        // Algoritmo de Ortografía Diatónica
+        const spellNote = (letterIdx, targetPitch) => {
+            const basePitch = LETTER_PITCHES[letterIdx];
+            let diff = targetPitch - basePitch;
+            while (diff > 6) diff -= 12;
+            while (diff < -5) diff += 12;
+            
+            const letter = LETTERS[letterIdx];
+            if (diff === 0) return letter;
+            if (diff === 1) return letter + '#';
+            if (diff === 2) return letter + 'x';
+            if (diff === -1) return letter + 'b';
+            if (diff === -2) return letter + 'bb';
+            return letter; 
+        };
+
+        const FREE_SCALES = ['major', 'natural_minor', 'major_pentatonic', 'minor_pentatonic', 'blues', 'dorian'];
+
+        // --- MASSIVE SCALE DATABASE (with explicit degree maps for non-heptatonic) ---
         const SCALES = {
-            // Standard Major Modes
             major: { name: 'Major (Ionian)', intervals: [0, 2, 4, 5, 7, 9, 11], steps: [2, 2, 1, 2, 2, 2, 1] },
             dorian: { name: 'Dorian', intervals: [0, 2, 3, 5, 7, 9, 10], steps: [2, 1, 2, 2, 2, 1, 2] },
             phrygian: { name: 'Phrygian', intervals: [0, 1, 3, 5, 7, 8, 10], steps: [1, 2, 2, 2, 1, 2, 2] },
@@ -58,7 +227,6 @@
             natural_minor: { name: 'Natural Minor (Aeolian)', intervals: [0, 2, 3, 5, 7, 8, 10], steps: [2, 1, 2, 2, 1, 2, 2] },
             locrian: { name: 'Locrian', intervals: [0, 1, 3, 5, 6, 8, 10], steps: [1, 2, 2, 1, 2, 2, 2] },
 
-            // Melodic Minor Modes
             melodic_minor: { name: 'Melodic Minor', intervals: [0, 2, 3, 5, 7, 9, 11], steps: [2, 1, 2, 2, 2, 2, 1] },
             dorian_b2: { name: 'Dorian b2 (Phrygian #6)', intervals: [0, 1, 3, 5, 7, 9, 10], steps: [1, 2, 2, 2, 2, 1, 2] },
             lydian_augmented: { name: 'Lydian Augmented', intervals: [0, 2, 4, 6, 8, 9, 11], steps: [2, 2, 2, 2, 1, 2, 1] },
@@ -67,7 +235,6 @@
             locrian_sharp2: { name: 'Locrian #2', intervals: [0, 2, 3, 5, 6, 8, 10], steps: [2, 1, 2, 1, 2, 2, 2] },
             altered: { name: 'Altered (Super Locrian)', intervals: [0, 1, 3, 4, 6, 8, 10], steps: [1, 2, 1, 2, 2, 2, 2] },
 
-            // Harmonic Minor Modes
             harmonic_minor: { name: 'Harmonic Minor', intervals: [0, 2, 3, 5, 7, 8, 11], steps: [2, 1, 2, 2, 1, 3, 1] },
             locrian_natural6: { name: 'Locrian ♮6', intervals: [0, 1, 3, 5, 6, 9, 10], steps: [1, 2, 2, 1, 3, 1, 2] },
             ionian_sharp5: { name: 'Ionian #5', intervals: [0, 2, 4, 5, 8, 9, 11], steps: [2, 2, 1, 3, 1, 2, 1] },
@@ -76,7 +243,6 @@
             lydian_sharp2: { name: 'Lydian #2', intervals: [0, 3, 4, 6, 7, 9, 11], steps: [3, 1, 2, 1, 2, 2, 1] },
             ultralocrian: { name: 'Ultralocrian', intervals: [0, 1, 3, 4, 6, 8, 9], steps: [1, 2, 1, 2, 2, 1, 3] },
 
-            // Harmonic Major Modes
             harmonic_major: { name: 'Harmonic Major', intervals: [0, 2, 4, 5, 7, 8, 11], steps: [2, 2, 1, 2, 1, 3, 1] },
             dorian_b5: { name: 'Dorian b5', intervals: [0, 2, 3, 5, 6, 9, 10], steps: [2, 1, 2, 1, 3, 1, 2] },
             phrygian_b4: { name: 'Phrygian b4', intervals: [0, 1, 3, 4, 7, 8, 10], steps: [1, 2, 1, 3, 1, 2, 2] },
@@ -85,7 +251,6 @@
             lydian_aug_sharp2: { name: 'Lydian Aug #2', intervals: [0, 3, 4, 6, 8, 9, 11], steps: [3, 1, 2, 2, 1, 2, 1] },
             locrian_bb7: { name: 'Locrian bb7', intervals: [0, 1, 3, 5, 6, 8, 9], steps: [1, 2, 2, 1, 2, 1, 3] },
 
-            // Double Harmonic Modes
             double_harmonic: { name: 'Double Harmonic Major', intervals: [0, 1, 4, 5, 7, 8, 11], steps: [1, 3, 1, 2, 1, 3, 1] },
             lydian_sharp2_sharp6: { name: 'Lydian #2 #6', intervals: [0, 3, 4, 6, 7, 10, 11], steps: [3, 1, 2, 1, 3, 1, 1] },
             ultraphrygian: { name: 'Ultraphrygian', intervals: [0, 1, 3, 4, 7, 8, 9], steps: [1, 2, 1, 3, 1, 1, 3] },
@@ -94,70 +259,54 @@
             ionian_aug_sharp2: { name: 'Ionian Aug #2', intervals: [0, 3, 4, 5, 8, 9, 11], steps: [3, 1, 1, 3, 1, 2, 1] },
             locrian_bb3_bb7: { name: 'Locrian bb3 bb7', intervals: [0, 1, 2, 5, 6, 8, 9], steps: [1, 1, 3, 1, 2, 1, 3] },
 
-            // Pentatonic Scales
-            major_pentatonic: { name: 'Major Pentatonic', intervals: [0, 2, 4, 7, 9], steps: [2, 2, 3, 2, 3] },
-            minor_pentatonic: { name: 'Minor Pentatonic', intervals: [0, 3, 5, 7, 10], steps: [3, 2, 2, 3, 2] },
-            egyptian: { name: 'Egyptian Pentatonic', intervals: [0, 2, 5, 7, 10], steps: [2, 3, 2, 3, 2] },
-            ritusen: { name: 'Ritusen (Man Gong)', intervals: [0, 2, 5, 7, 9], steps: [2, 3, 2, 2, 3] },
-            hirajoshi: { name: 'Hirajoshi', intervals: [0, 2, 3, 7, 8], steps: [2, 1, 4, 1, 4] },
-            in_sen: { name: 'In Sen', intervals: [0, 1, 5, 7, 10], steps: [1, 4, 2, 3, 2] },
-            iwato: { name: 'Iwato', intervals: [0, 1, 5, 6, 10], steps: [1, 4, 1, 4, 2] },
-            yo_scale: { name: 'Yo Scale', intervals: [0, 2, 5, 7, 9], steps: [2, 3, 2, 2, 3] },
-            balinese: { name: 'Balinese', intervals: [0, 1, 3, 7, 8], steps: [1, 2, 4, 1, 4] },
-            pelog: { name: 'Pelog', intervals: [0, 1, 3, 7, 8], steps: [1, 2, 4, 1, 4] },
-            kumoi: { name: 'Kumoi', intervals: [0, 2, 3, 7, 9], steps: [2, 1, 4, 2, 3] },
+            major_pentatonic: { name: 'Major Pentatonic', intervals: [0, 2, 4, 7, 9], steps: [2, 2, 3, 2, 3], degrees: [0, 1, 2, 4, 5] },
+            minor_pentatonic: { name: 'Minor Pentatonic', intervals: [0, 3, 5, 7, 10], steps: [3, 2, 2, 3, 2], degrees: [0, 2, 3, 4, 6] },
+            egyptian: { name: 'Egyptian Pentatonic', intervals: [0, 2, 5, 7, 10], steps: [2, 3, 2, 3, 2], degrees: [0, 1, 3, 4, 6] },
+            ritusen: { name: 'Ritusen (Man Gong)', intervals: [0, 2, 5, 7, 9], steps: [2, 3, 2, 2, 3], degrees: [0, 1, 3, 4, 5] },
+            hirajoshi: { name: 'Hirajoshi', intervals: [0, 2, 3, 7, 8], steps: [2, 1, 4, 1, 4], degrees: [0, 1, 2, 4, 5] },
+            in_sen: { name: 'In Sen', intervals: [0, 1, 5, 7, 10], steps: [1, 4, 2, 3, 2], degrees: [0, 1, 3, 4, 6] },
+            iwato: { name: 'Iwato', intervals: [0, 1, 5, 6, 10], steps: [1, 4, 1, 4, 2], degrees: [0, 1, 3, 4, 6] },
+            yo_scale: { name: 'Yo Scale', intervals: [0, 2, 5, 7, 9], steps: [2, 3, 2, 2, 3], degrees: [0, 1, 3, 4, 5] },
+            balinese: { name: 'Balinese', intervals: [0, 1, 3, 7, 8], steps: [1, 2, 4, 1, 4], degrees: [0, 1, 2, 4, 5] },
+            pelog: { name: 'Pelog', intervals: [0, 1, 3, 7, 8], steps: [1, 2, 4, 1, 4], degrees: [0, 1, 2, 4, 5] },
+            kumoi: { name: 'Kumoi', intervals: [0, 2, 3, 7, 9], steps: [2, 1, 4, 2, 3], degrees: [0, 1, 2, 4, 5] },
 
-            // Blues & Bebop
-            blues: { name: 'Blues', intervals: [0, 3, 5, 6, 7, 10], steps: [3, 2, 1, 1, 3, 2] },
-            bebop_dominant: { name: 'Bebop Dominant', intervals: [0, 2, 4, 5, 7, 9, 10, 11], steps: [2, 2, 1, 2, 2, 1, 1, 1] },
-            bebop_major: { name: 'Bebop Major', intervals: [0, 2, 4, 5, 7, 8, 9, 11], steps: [2, 2, 1, 2, 1, 1, 2, 1] },
-            bebop_minor: { name: 'Bebop Minor', intervals: [0, 2, 3, 4, 5, 7, 9, 10], steps: [2, 1, 1, 1, 2, 2, 1, 2] },
-            bebop_dorian: { name: 'Bebop Dorian', intervals: [0, 2, 3, 4, 5, 7, 9, 10], steps: [2, 1, 1, 1, 2, 2, 1, 2] },
+            blues: { name: 'Blues', intervals: [0, 3, 5, 6, 7, 10], steps: [3, 2, 1, 1, 3, 2], degrees: [0, 2, 3, 3, 4, 6] },
+            bebop_dominant: { name: 'Bebop Dominant', intervals: [0, 2, 4, 5, 7, 9, 10, 11], steps: [2, 2, 1, 2, 2, 1, 1, 1], degrees: [0, 1, 2, 3, 4, 5, 6, 6] },
+            bebop_major: { name: 'Bebop Major', intervals: [0, 2, 4, 5, 7, 8, 9, 11], steps: [2, 2, 1, 2, 1, 1, 2, 1], degrees: [0, 1, 2, 3, 4, 5, 5, 6] },
+            bebop_minor: { name: 'Bebop Minor', intervals: [0, 2, 3, 4, 5, 7, 9, 10], steps: [2, 1, 1, 1, 2, 2, 1, 2], degrees: [0, 1, 2, 2, 3, 4, 5, 6] },
+            bebop_dorian: { name: 'Bebop Dorian', intervals: [0, 2, 3, 4, 5, 7, 9, 10], steps: [2, 1, 1, 1, 2, 2, 1, 2], degrees: [0, 1, 2, 2, 3, 4, 5, 6] },
 
-            // Symmetric & Exotic
-            whole_tone: { name: 'Whole Tone', intervals: [0, 2, 4, 6, 8, 10], steps: [2, 2, 2, 2, 2, 2] },
-            diminished_wh: { name: 'Diminished (W-H)', intervals: [0, 2, 3, 5, 6, 8, 9, 11], steps: [2, 1, 2, 1, 2, 1, 2, 1] },
-            diminished_hw: { name: 'Diminished (H-W)', intervals: [0, 1, 3, 4, 6, 7, 9, 10], steps: [1, 2, 1, 2, 1, 2, 1, 2] },
-            augmented: { name: 'Augmented', intervals: [0, 3, 4, 7, 8, 11], steps: [3, 1, 3, 1, 3, 1] },
-            prometheus: { name: 'Prometheus', intervals: [0, 2, 4, 6, 9, 10], steps: [2, 2, 2, 3, 1, 2] },
-            tritone: { name: 'Tritone', intervals: [0, 1, 4, 6, 7, 10], steps: [1, 3, 2, 1, 3, 2] },
-            two_semitone_tritone: { name: 'Two-Semitone Tritone', intervals: [0, 1, 2, 6, 7, 8], steps: [1, 1, 4, 1, 1, 4] },
-            enigmatic: { name: 'Enigmatic', intervals: [0, 1, 4, 6, 8, 10, 11], steps: [1, 3, 2, 2, 2, 1, 1] },
-            persian: { name: 'Persian', intervals: [0, 1, 4, 5, 6, 8, 11], steps: [1, 3, 1, 1, 2, 3, 1] },
-            neapolitan_major: { name: 'Neapolitan Major', intervals: [0, 1, 3, 5, 7, 9, 11], steps: [1, 2, 2, 2, 2, 2, 1] },
-            neapolitan_minor: { name: 'Neapolitan Minor', intervals: [0, 1, 3, 5, 7, 8, 11], steps: [1, 2, 2, 2, 1, 3, 1] },
-            hungarian_major: { name: 'Hungarian Major', intervals: [0, 3, 4, 6, 7, 9, 10], steps: [3, 1, 2, 1, 2, 1, 2] },
-            arabian: { name: 'Arabian', intervals: [0, 2, 4, 5, 6, 8, 10], steps: [2, 2, 1, 1, 2, 2, 2] },
-            byzantine: { name: 'Byzantine', intervals: [0, 1, 4, 5, 7, 8, 11], steps: [1, 3, 1, 2, 1, 3, 1] },
-            jewish: { name: 'Jewish (Ahava Raba)', intervals: [0, 1, 4, 5, 7, 8, 10], steps: [1, 3, 1, 2, 1, 2, 2] },
-            spanish_eight_tone: { name: 'Spanish 8-Tone', intervals: [0, 1, 3, 4, 5, 6, 8, 10], steps: [1, 2, 1, 1, 1, 2, 2, 2] },
-            ukrainian_dorian: { name: 'Ukrainian Dorian', intervals: [0, 2, 3, 6, 7, 9, 10], steps: [2, 1, 3, 1, 2, 1, 2] }
+            whole_tone: { name: 'Whole Tone', intervals: [0, 2, 4, 6, 8, 10], steps: [2, 2, 2, 2, 2, 2], degrees: [0, 1, 2, 3, 4, 5] },
+            diminished_wh: { name: 'Diminished (W-H)', intervals: [0, 2, 3, 5, 6, 8, 9, 11], steps: [2, 1, 2, 1, 2, 1, 2, 1], degrees: [0, 1, 2, 3, 4, 5, 6, 6] },
+            diminished_hw: { name: 'Diminished (H-W)', intervals: [0, 1, 3, 4, 6, 7, 9, 10], steps: [1, 2, 1, 2, 1, 2, 1, 2], degrees: [0, 1, 2, 2, 3, 4, 5, 6] },
+            augmented: { name: 'Augmented', intervals: [0, 3, 4, 7, 8, 11], steps: [3, 1, 3, 1, 3, 1], degrees: [0, 2, 2, 4, 5, 6] },
+            spanish_eight_tone: { name: 'Spanish 8-Tone', intervals: [0, 1, 3, 4, 5, 6, 8, 10], steps: [1, 2, 1, 1, 1, 2, 2, 2], degrees: [0, 1, 2, 2, 3, 4, 5, 6] }
         };
 
         const INTERVAL_NAMES = { 0: 'P1', 1: 'm2', 2: 'M2', 3: 'm3', 4: 'M3', 5: 'P4', 6: 'd5/A4', 7: 'P5', 8: 'm6', 9: 'M6', 10: 'm7', 11: 'M7', 12: 'P8' };
         const THEME_COLORS = { 0: 'rose', 1: 'orange', 2: 'amber', 3: 'yellow', 4: 'lime', 5: 'emerald', 6: 'teal', 7: 'cyan', 8: 'sky', 9: 'indigo', 10: 'violet', 11: 'fuchsia' };
 
+        const getNoteIndex = (note) => parseNote(note).pitch;
         const getKeyColor = (root) => THEME_COLORS[getNoteIndex(root)] || 'purple';
-        const getNoteIndex = (note) => {
-            let idx = NOTES_SHARP.indexOf(note);
-            if (idx === -1) idx = NOTES_FLAT.indexOf(note);
-            return idx;
-        };
 
-        const getScaleNotes = (root, scaleKey) => {
-            const rootIdx = getNoteIndex(root);
+        const getScaleNotes = (rootName, scaleKey) => {
+            const root = parseNote(rootName);
             const scale = SCALES[scaleKey];
             const notes = [];
-            const useFlats = ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb'].includes(root) || (scaleKey.includes('minor') || scaleKey.includes('locrian') || scaleKey.includes('phrygian')) && ['D', 'G', 'C', 'F'].includes(root);
-            const noteSource = useFlats ? NOTES_FLAT : NOTES_SHARP;
+            
+            const degrees = scale.degrees || scale.intervals.map((_, i) => i); 
+            
             scale.intervals.forEach((interval, i) => {
-                const chromaticIdx = (rootIdx + interval) % 12;
+                const chromaticIdx = (root.pitch + interval) % 12;
+                const targetLetterIdx = (root.letterIdx + degrees[i]) % 7;
+                
                 notes.push({
-                    note: noteSource[chromaticIdx],
+                    note: spellNote(targetLetterIdx, chromaticIdx),
                     intervalName: INTERVAL_NAMES[interval] || '?',
                     semitonesFromRoot: interval,
                     stepToNext: scale.steps[i] || 0,
-                    degree: i + 1,
+                    degree: degrees[i] + 1,
                     chromaticIndex: chromaticIdx
                 });
             });
@@ -243,15 +392,8 @@
         };
 
         const getFreq = (noteName, octave = 4) => {
-            const allNotes = [...NOTES_SHARP];
-            let note = noteName;
-            if (note.includes('b')) {
-                const flatIdx = NOTES_FLAT.indexOf(note);
-                if (flatIdx !== -1) note = NOTES_SHARP[flatIdx];
-            }
-            let idx = allNotes.indexOf(note);
-            if (idx === -1) idx = 0;
-            const semitonesFromA4 = idx - allNotes.indexOf('A') + (octave - 4) * 12;
+            const parsed = parseNote(noteName);
+            const semitonesFromA4 = parsed.pitch - 9 + (octave - 4) * 12;
             return 440 * Math.pow(2, semitonesFromA4 / 12);
         };
 
@@ -261,7 +403,15 @@
             { name: 'E', openMidi: 40 }, { name: 'A', openMidi: 45 }, { name: 'D', openMidi: 50 },
             { name: 'G', openMidi: 55 }, { name: 'B', openMidi: 59 }, { name: 'e', openMidi: 64 },
         ];
-        const normalizeNote = (note) => NOTES_FLAT.includes(note) ? NOTES_SHARP[NOTES_FLAT.indexOf(note)] : note;
+        const normalizeNote = (note) => {
+            const parsed = parseNote(note);
+            if (parsed.pitch === 1) return 'C#';
+            if (parsed.pitch === 3) return 'Eb';
+            if (parsed.pitch === 6) return 'F#';
+            if (parsed.pitch === 8) return 'G#';
+            if (parsed.pitch === 10) return 'Bb';
+            return ['C','C#','D','Eb','E','F','F#','G','G#','A','Bb','B'][parsed.pitch];
+        };
 
         const STANDARD_VOICINGS = {
             'C_major': [-1, 3, 2, 0, 1, 0], 'D_major': [-1, -1, 0, 2, 3, 2], 'E_major': [0, 2, 2, 1, 0, 0],
@@ -316,7 +466,7 @@
                     }
                     return shape.map(s => (s === -1 ? -1 : s + fret));
                 };
-                const useAShape = ['A#', 'Bb', 'B', 'C', 'C#', 'Db', 'D', 'D#', 'Eb'].includes(root);
+                const useAShape = ['A#', 'Bb', 'B', 'C', 'C#', 'Db', 'D', 'D#', 'Eb'].includes(normRoot);
                 if (useAShape) return buildBarre(1, aRootFret, quality);
                 else return buildBarre(0, eRootFret, quality);
             }
@@ -344,46 +494,78 @@
         };
 
         const FIFTHS_ORDER = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'Db', 'Ab', 'Eb', 'Bb', 'F'];
-        const KEY_SIGS_MAJOR = { 'C':{c:0,t:'s'}, 'G':{c:1,t:'s'}, 'D':{c:2,t:'s'}, 'A':{c:3,t:'s'}, 'E':{c:4,t:'s'}, 'B':{c:5,t:'s'}, 'F#':{c:6,t:'s'}, 'C#':{c:7,t:'s'}, 'F':{c:1,t:'f'}, 'Bb':{c:2,t:'f'}, 'Eb':{c:3,t:'f'}, 'Ab':{c:4,t:'f'}, 'Db':{c:5,t:'f'}, 'Gb':{c:6,t:'f'}, 'Cb':{c:7,t:'f'} };
-        const KEY_SIGS_MINOR = { 'A':{c:0,t:'s'}, 'E':{c:1,t:'s'}, 'B':{c:2,t:'s'}, 'F#':{c:3,t:'s'}, 'C#':{c:4,t:'s'}, 'G#':{c:5,t:'s'}, 'D#':{c:6,t:'s'}, 'A#':{c:7,t:'s'}, 'D':{c:1,t:'f'}, 'G':{c:2,t:'f'}, 'C':{c:3,t:'f'}, 'F':{c:4,t:'f'}, 'Bb':{c:5,t:'f'}, 'Eb':{c:6,t:'f'}, 'Ab':{c:7,t:'f'} };
-        const ENHARMONIC_KEYS = { 'D#': 'Eb', 'G#': 'Ab', 'A#': 'Bb' };
-        const getKeySignature = (root, scaleKey) => {
-            const isMinor = ['natural_minor', 'harmonic_minor', 'melodic_minor', 'dorian', 'phrygian', 'locrian', 'minor_pentatonic', 'blues'].includes(scaleKey);
-            const map = isMinor ? KEY_SIGS_MINOR : KEY_SIGS_MAJOR;
-            let sig = map[root];
-            if (!sig && ENHARMONIC_KEYS[root] && map[ENHARMONIC_KEYS[root]]) sig = map[ENHARMONIC_KEYS[root]];
+        
+        const KEY_SIGS_MAJOR = { 
+            'Cb': {c:7, t:'f'}, 'Gb': {c:6, t:'f'}, 'Db': {c:5, t:'f'}, 'Ab': {c:4, t:'f'}, 'Eb': {c:3, t:'f'}, 'Bb': {c:2, t:'f'}, 'F': {c:1, t:'f'},
+            'C': {c:0, t:'s'}, 
+            'G': {c:1, t:'s'}, 'D': {c:2, t:'s'}, 'A': {c:3, t:'s'}, 'E': {c:4, t:'s'}, 'B': {c:5, t:'s'}, 'F#': {c:6, t:'s'}, 'C#': {c:7, t:'s'}
+        };
+        const ENHARMONIC_KEYS = { 'D#': 'Eb', 'G#': 'Ab', 'A#': 'Bb', 'E#': 'F', 'B#': 'C', 'Fb': 'E' };
+
+        const MODE_OFFSETS = {
+            dorian: {semi: -2, step: -1}, phrygian: {semi: -4, step: -2}, lydian: {semi: -5, step: -3},
+            mixolydian: {semi: -7, step: -4}, natural_minor: {semi: -9, step: -5}, locrian: {semi: -11, step: -6}
+        };
+        const USE_MINOR_KEY_SIG = ['harmonic_minor', 'melodic_minor', 'minor_pentatonic', 'blues'];
+
+        const getKeySignature = (rootName, scaleKey) => {
+            const root = parseNote(rootName);
+            let targetSemiOffset = 0;
+            let targetStepOffset = 0;
+
+            if (MODE_OFFSETS[scaleKey]) {
+                targetSemiOffset = MODE_OFFSETS[scaleKey].semi;
+                targetStepOffset = MODE_OFFSETS[scaleKey].step;
+            } else if (USE_MINOR_KEY_SIG.includes(scaleKey) || SCALES[scaleKey].intervals.includes(3)) {
+                targetSemiOffset = -9;
+                targetStepOffset = -5;
+            }
+            
+            const relLetterIdx = (root.letterIdx + targetStepOffset + 7) % 7;
+            const relPitch = (root.pitch + targetSemiOffset + 12) % 12;
+            const relName = spellNote(relLetterIdx, relPitch);
+
+            let sig = KEY_SIGS_MAJOR[relName];
+            if (!sig && ENHARMONIC_KEYS[relName]) sig = KEY_SIGS_MAJOR[ENHARMONIC_KEYS[relName]];
+            
             return sig || { c: 0, t: 's' };
         };
 
         const KeySignatureDisplay = ({ sig, color }) => {
             if (!sig || sig.c === 0) return null;
-            const sharpPos = [10, 25, 5, 20, 35, 15, 30], flatPos = [20, 5, 25, 10, 30, 15, 35];
+            const sharpPos = [10, 17.5, 5, 15, 22.5, 12.5, 20]; 
+            const flatPos = [20, 12.5, 22.5, 15, 25, 17.5, 27.5]; 
             const positions = sig.t === 's' ? sharpPos : flatPos;
             const symbol = sig.t === 's' ? '♯' : '♭';
             const activePos = positions.slice(0, sig.c);
+            const yOffset = sig.t === 's' ? 4 : 2;
             return (
                 <div className="flex justify-center items-center h-8 mt-1 overflow-visible">
                     <svg width={Math.max(40, sig.c * 8 + 10)} height="40" viewBox={`0 0 ${Math.max(40, sig.c * 8 + 10)} 40`}>
                         {[10, 15, 20, 25, 30].map(y => <line key={y} x1="0" y1={y} x2="100%" y2={y} stroke="#cbd5e1" strokeWidth="1" />)}
-                        {activePos.map((y, i) => <text key={i} x={5 + i * 8} y={y + 4} fontSize="14" className={`fill-${color}-500 font-bold`} style={{ fontFamily: 'serif' }}>{symbol}</text>)}
+                        {activePos.map((y, i) => (
+                            <text key={i} x={5 + i * 8} y={y + yOffset} fontSize="14" className={`fill-${color}-500 font-bold`} style={{ fontFamily: 'serif' }}>
+                                {symbol}
+                            </text>
+                        ))}
                     </svg>
                 </div>
             );
         };
 
-        const CircleOfFifths = ({ root, scaleKey, currentNotes, onRootChange, color }) => {
+        const CircleOfFifths = ({ root, scaleKey, currentNotes, onRootChange, color, t }) => {
             let normRoot = root;
             const map = { 'C#': 'Db', 'D#': 'Eb', 'G#': 'Ab', 'A#': 'Bb', 'Gb': 'F#' };
             if (map[root]) normRoot = map[root];
             let rootIndex = FIFTHS_ORDER.indexOf(normRoot);
             if (rootIndex === -1) { if (root === 'Gb') rootIndex = FIFTHS_ORDER.indexOf('F#'); if (root === 'Cb') rootIndex = FIFTHS_ORDER.indexOf('B'); }
             const rotation = -(rootIndex * 30);
-            const activePitches = currentNotes.map(n => getNoteIndex(n.note));
+            const activePitches = currentNotes.map(n => n.chromaticIndex);
             const rootPitch = getNoteIndex(root);
             const keySig = getKeySignature(root, scaleKey);
             return (
                 <div className="flex flex-col items-center justify-center p-4">
-                    <h3 className="text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wide">Circle of Fifths</h3>
+                    <h3 className="text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wide">{t('circleOfFifths')}</h3>
                     <div className="relative w-64 h-64">
                         <div className="w-full h-full transition-transform duration-700 ease-out" style={{ transform: `rotate(${rotation}deg)` }}>
                             <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-md">
@@ -397,10 +579,14 @@
                                     const notePitch = getNoteIndex(note);
                                     const isNoteActive = activePitches.includes(notePitch), isRoot = notePitch === rootPitch;
                                     const sliceColor = isRoot ? 'currentColor' : isNoteActive ? '#e2e8f0' : '#f8fafc';
+                                    
+                                    const textX = 100 + 80 * Math.cos(((i * 30) - 90) * Math.PI / 180);
+                                    const textY = 100 + 80 * Math.sin(((i * 30) - 90) * Math.PI / 180);
+
                                     return (
                                         <g key={note} onClick={(e) => { e.stopPropagation(); onRootChange(note); }} className={`cursor-pointer transition-colors duration-300 ${isRoot ? `text-${color}-500` : 'text-slate-200'}`}>
                                             <path d={d} fill={sliceColor} stroke="white" strokeWidth="1" className="pointer-events-auto hover:opacity-80"/>
-                                            <text x={100 + 80 * Math.cos(((i * 30) - 90) * Math.PI / 180)} y={100 + 80 * Math.sin(((i * 30) - 90) * Math.PI / 180)} textAnchor="middle" dominantBaseline="middle" className={`text-[10px] font-bold pointer-events-none ${isRoot ? 'fill-white' : isNoteActive ? 'fill-slate-600' : 'fill-slate-300'}`} transform={`rotate(${(i * 30) - 90 + (-rotation)} ${100 + 80 * Math.cos(((i * 30) - 90) * Math.PI / 180)} ${100 + 80 * Math.sin(((i * 30) - 90) * Math.PI / 180)})`}>{note}</text>
+                                            <text x={textX} y={textY} textAnchor="middle" dominantBaseline="middle" className={`text-[10px] font-bold pointer-events-none transition-transform duration-700 ease-out ${isRoot ? 'fill-white' : isNoteActive ? 'fill-slate-600' : 'fill-slate-300'}`} transform={`rotate(${-rotation} ${textX} ${textY})`}>{note}</text>
                                         </g>
                                     );
                                 })}
@@ -419,7 +605,7 @@
             );
         };
 
-        const GuitarTab = ({ chordNotes, root }) => {
+        const GuitarTab = ({ chordNotes, root, t }) => {
             const frets = generateGuitarVoicing(chordNotes, root);
             return (
                 <div className="w-full max-w-xs mx-auto p-4 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center my-4">
@@ -427,79 +613,116 @@
                         {GUITAR_STRINGS.map((_, i) => <div key={i} className="absolute w-full h-px bg-slate-300" style={{ top: `${20 + i * 20}px` }}></div>)}
                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                             {frets.map((fret, stringIdx) => (
-                                <div key={stringIdx} className="absolute flex items-center justify-center" style={{ top: `${20 + stringIdx * 20}px`, transform: 'translateY(-50%)' }}>
+                                <div key={stringIdx} className="absolute flex items-center justify-center" style={{ top: `${20 + (5 - stringIdx) * 20}px`, transform: 'translateY(-50%)' }}>
                                     {fret === -1 ? <span className="text-slate-300 text-xs font-bold bg-white px-1">x</span> : <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow-sm z-10 ${fret === 0 ? 'bg-white border border-slate-200 text-slate-700' : 'bg-slate-800 text-white'}`}>{fret}</div>}
                                 </div>
                             ))}
                         </div>
                         <div className="absolute left-2 top-0 h-full">
-                            {GUITAR_STRINGS.map((s, i) => <span key={s.name} className="absolute text-[10px] text-slate-400 font-bold" style={{ top: `${20 + i * 20}px`, transform: 'translateY(-50%)' }}>{s.name}</span>)}
+                            {GUITAR_STRINGS.map((s, i) => <span key={s.name} className="absolute text-[10px] text-slate-400 font-bold" style={{ top: `${20 + (5 - i) * 20}px`, transform: 'translateY(-50%)' }}>{s.name}</span>)}
                         </div>
-                        <div className="absolute bottom-1 right-2 text-[10px] text-slate-300 font-bold tracking-widest">GUITAR</div>
+                        <div className="absolute bottom-1 right-2 text-[10px] text-slate-300 font-bold tracking-widest">{t('guitar')}</div>
                     </div>
                 </div>
             );
         };
 
-        const ScaleTablature = ({ notes, root }) => {
+        const ScaleTablature = ({ notes, root, scaleKey, color, t, isPremium, setShowPremiumModal }) => {
+            const [isPlaying, setIsPlaying] = useState(false);
+            const [activeNoteMidi, setActiveNoteMidi] = useState(null);
+
             const tabNotes = useMemo(() => {
                 const rootIdx = getNoteIndex(root);
+                const scalePitches = notes.map(n => n.chromaticIndex);
+
                 let anchorFret = -1;
-                for(let f=0; f<=12; f++) { if ((GUITAR_STRINGS[0].openMidi + f) % 12 === rootIdx) { anchorFret = f; break; } }
+                for(let f=0; f<=11; f++) {
+                    if ((GUITAR_STRINGS[0].openMidi + f) % 12 === rootIdx) {
+                        anchorFret = f;
+                        break;
+                    }
+                }
                 
-                // Box Constraints
-                const minFret = anchorFret;
-                const maxFret = anchorFret + 4;
-                const rootMidi = GUITAR_STRINGS[0].openMidi + anchorFret;
+                const isMinorShape = scaleKey.includes('minor') || scaleKey.includes('pentatonic') || scaleKey.includes('dorian') || scaleKey.includes('phrygian') || scaleKey.includes('locrian') || scaleKey.includes('blues');
 
-                return notes.map((n, i) => {
-                    const targetMidi = rootMidi + n.semitonesFromRoot;
-                    let bestString = -1;
-                    let bestFret = -1;
+                let minFret = anchorFret;
+                if (!isMinorShape && anchorFret > 0) minFret = anchorFret - 1;
+                
+                const maxFret = minFret + 4; 
 
-                    for (let s = 0; s < GUITAR_STRINGS.length; s++) {
-                        const stringOpen = GUITAR_STRINGS[s].openMidi;
-                        const fret = targetMidi - stringOpen;
-                        if (fret >= 0 && fret <= 24) {
-                            const inBox = (fret >= minFret && fret <= maxFret);
-                            const isOpen = (fret === 0 && minFret <= 3);
-                            if (inBox || isOpen) {
-                                if (bestFret === -1) { bestString = s; bestFret = fret; }
-                            }
+                const boxNotes = [];
+                for (let s = 0; s < GUITAR_STRINGS.length; s++) {
+                    const stringOpen = GUITAR_STRINGS[s].openMidi;
+                    for (let f = minFret; f <= maxFret; f++) {
+                        const midi = stringOpen + f;
+                        const cIdx = midi % 12;
+                        if (scalePitches.includes(cIdx)) {
+                            boxNotes.push({ string: s, fret: f, isRoot: cIdx === rootIdx });
                         }
                     }
-                    if (bestFret === -1) {
-                        let minDist = 999;
-                        for (let s = 0; s < GUITAR_STRINGS.length; s++) {
-                             const f = targetMidi - GUITAR_STRINGS[s].openMidi;
-                             if (f >= 0 && f < 20) {
-                                 const dist = Math.abs(f - minFret);
-                                 if (dist < minDist) { minDist = dist; bestString = s; bestFret = f; }
-                             }
-                        }
-                    }
-                    return { ...n, string: bestString, fret: bestFret };
+                }
+                return boxNotes;
+            }, [notes, root, scaleKey]);
+
+            const handlePlay = async () => {
+                if (isPlaying) return;
+                setIsPlaying(true);
+                const duration = 0.25; 
+
+                const sortedNotes = [...tabNotes].sort((a, b) => {
+                    return (GUITAR_STRINGS[a.string].openMidi + a.fret) - (GUITAR_STRINGS[b.string].openMidi + b.fret);
                 });
-            }, [notes, root]);
+
+                for (let i = 0; i < sortedNotes.length; i++) {
+                    const note = sortedNotes[i];
+                    const midi = GUITAR_STRINGS[note.string].openMidi + note.fret;
+                    setActiveNoteMidi(midi);
+                    playGuitarTone(midiToFreq(midi), duration * 1.5);
+                    await new Promise(r => setTimeout(r, duration * 1000));
+                }
+                
+                setActiveNoteMidi(null);
+                setIsPlaying(false);
+            };
 
             return (
-                <div className="w-full overflow-x-auto p-4 bg-white rounded-xl shadow-sm border border-slate-100 min-h-[140px] flex items-center justify-center relative mt-4">
-                    <div className="absolute top-2 left-2 text-xs font-bold text-slate-400">GUITAR TAB (Box Pattern)</div>
-                    <svg width="100%" height={120} viewBox={`0 0 ${Math.max(400, notes.length * 60)} 120`}>
+                <div className="w-full overflow-x-auto p-4 bg-white rounded-xl shadow-sm border border-slate-100 min-h-[140px] flex items-center justify-center relative mt-4 custom-scrollbar">
+                    <div className="absolute top-2 left-2 text-xs font-bold text-slate-400">{t('guitarTabBox')}</div>
+                    
+                    <div className="absolute top-2 right-2 z-10">
+                        <button 
+                            onClick={() => {
+                                if (!isPremium) {
+                                    setShowPremiumModal(true);
+                                } else {
+                                    handlePlay();
+                                }
+                            }} 
+                            disabled={isPlaying} 
+                            className={`px-2 py-1 rounded flex items-center justify-center transition-all gap-1 ${isPlaying ? `bg-${color}-100 text-${color}-400` : !isPremium ? 'bg-slate-50 text-slate-400 hover:bg-slate-200 border border-slate-200' : `bg-white text-${color}-600 hover:bg-${color}-50 border border-${color}-200 shadow-sm`}`}
+                        >
+                            {!isPremium ? <Lock size={12} /> : isPlaying ? <Volume2 size={12} className="animate-pulse" /> : <Play size={12} />}
+                            <span className="text-[9px] font-bold uppercase">{isPlaying ? t('playing') : t('playBox')}</span>
+                        </button>
+                    </div>
+
+                    <svg width={Math.max(400, tabNotes.length * 35 + 80)} height={120} viewBox={`0 0 ${Math.max(400, tabNotes.length * 35 + 80)} 120`}>
                         {[0, 1, 2, 3, 4, 5].map(i => {
                             const y = 20 + i * 16;
                             return <line key={i} x1="40" y1={y} x2="100%" y2={y} stroke="#cbd5e1" strokeWidth="1" />;
                         })}
-                        {[0, 1, 2, 3, 4, 5].map(i => <text key={i} x="10" y={24 + i * 16} fontSize="10" className="fill-slate-400 font-bold">{GUITAR_STRINGS[i].name}</text>)}
+                        {[0, 1, 2, 3, 4, 5].map(i => <text key={i} x="10" y={24 + i * 16} fontSize="10" className="fill-slate-400 font-bold">{GUITAR_STRINGS[5 - i].name}</text>)}
                         <line x1="40" y1="20" x2="40" y2={20 + 5 * 16} stroke="#94a3b8" strokeWidth="2" />
                         {tabNotes.map((n, i) => {
-                            if (n.string === -1) return null; 
-                            const x = 70 + i * 50;
-                            const y = 20 + n.string * 16;
+                            const x = 70 + i * 35;
+                            const y = 20 + (5 - n.string) * 16;
+                            const midi = GUITAR_STRINGS[n.string].openMidi + n.fret;
+                            const isActive = activeNoteMidi === midi;
+
                             return (
                                 <g key={i}>
-                                    <circle cx={x} cy={y} r="7" fill="white" />
-                                    <text x={x} y={y + 3} fontSize="10" textAnchor="middle" className="fill-slate-700 font-bold">{n.fret}</text>
+                                    <circle cx={x} cy={y} r={isActive ? "11" : "8"} className={`transition-all duration-150 ${isActive ? `fill-${color}-400` : n.isRoot ? `fill-${color}-500` : "fill-white"}`} stroke={n.isRoot || isActive ? "transparent" : "#cbd5e1"} strokeWidth="1.5" />
+                                    <text x={x} y={y + 3} fontSize="10" textAnchor="middle" className={`font-bold pointer-events-none transition-colors ${isActive || n.isRoot ? 'fill-white' : 'fill-slate-600'}`}>{n.fret}</text>
                                 </g>
                             );
                         })}
@@ -508,7 +731,7 @@
             );
         };
 
-        const Staff = ({ notes, isChord = false }) => {
+        const Staff = ({ notes, isChord = false, t }) => {
             const staffRef = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
             const getStaffY = (note, octave = 4) => {
                 const letter = note.charAt(0);
@@ -531,7 +754,7 @@
 
             return (
                 <div className={`w-full overflow-x-auto p-4 bg-white rounded-xl shadow-sm border border-slate-100 min-h-[160px] flex items-center justify-center relative ${isChord ? `max-w-xs mx-auto my-4 border-2 border-slate-100` : ''}`}>
-                    {isChord && <div className="absolute top-2 left-2 text-xs font-bold text-slate-400">CHORD</div>}
+                    {isChord && <div className="absolute top-2 left-2 text-xs font-bold text-slate-400">{t('chord')}</div>}
                     <svg width="100%" height={viewHeight} viewBox={`0 0 ${viewWidth} ${viewHeight}`}>
                         <g transform={`translate(0, ${offset})`}>
                             {[20, 30, 40, 50, 60].map(y => <line key={y} x1="0" y1={y} x2="100%" y2={y} stroke="#94a3b8" strokeWidth="1" />)}
@@ -547,8 +770,10 @@
                                         {n.y >= 70 && <line x1="-10" y1="70" x2="10" y2="70" stroke="#94a3b8" strokeWidth="1" />}
                                         {n.y >= 80 && <line x1="-10" y1="80" x2="10" y2="80" stroke="#94a3b8" strokeWidth="1" />}
                                         <ellipse cx="0" cy={n.y} rx="8" ry="5.5" fill="white" stroke="#1e293b" strokeWidth="2" transform={`rotate(-15, 0, ${n.y})`} />
-                                        {n.note.includes('#') && <text x="-22" y={n.y + 5} fontSize="16" fill="#1e293b">♯</text>}
-                                        {n.note.includes('b') && <text x="-22" y={n.y + 5} fontSize="16" fill="#1e293b">♭</text>}
+                                        {n.note.includes('x') && <text x="-22" y={n.y + 5} fontSize="14" fill="#1e293b" className="font-bold">x</text>}
+                                        {n.note.includes('#') && !n.note.includes('x') && <text x="-22" y={n.y + 5} fontSize="16" fill="#1e293b">♯</text>}
+                                        {n.note.includes('bb') && <text x="-26" y={n.y + 5} fontSize="16" fill="#1e293b">♭♭</text>}
+                                        {n.note.includes('b') && !n.note.includes('bb') && <text x="-22" y={n.y + 5} fontSize="16" fill="#1e293b">♭</text>}
                                         {!isChord && <text x="0" y="100" fontSize="10" textAnchor="middle" fill="#64748b" className="font-medium">{n.note}</text>}
                                     </g>
                                 );
@@ -560,16 +785,23 @@
         };
 
         function MusicScaleApp() {
-            const [root, setRoot] = useState('G');
+            const [root, setRoot] = useState('C');
             const [scaleKey, setScaleKey] = useState('major');
             const [bpm, setBpm] = useState(75);
             const [isPlaying, setIsPlaying] = useState(false);
             const [playingIndex, setPlayingIndex] = useState(null);
-            const [chordComplexity, setChordComplexity] = useState(4);
+            const [chordComplexity, setChordComplexity] = useState(3); // Inicia en tríadas por defecto
             const [selectedChordIndex, setSelectedChordIndex] = useState(null);
             const [chordViewMode, setChordViewMode] = useState('staff');
             const [isScaleMenuOpen, setIsScaleMenuOpen] = useState(false);
             const [searchTerm, setSearchTerm] = useState('');
+
+            // Estado Premium & I18N
+            const [isPremium, setIsPremium] = useState(false);
+            const [showPremiumModal, setShowPremiumModal] = useState(false);
+            const [lang, setLang] = useState('en');
+
+            const t = (key) => TRANSLATIONS[lang][key] || key;
 
             const notes = getScaleNotes(root, scaleKey);
             const chords = getDiatonicChords(notes, scaleKey);
@@ -577,8 +809,8 @@
 
             const filteredScales = useMemo(() => {
                 const term = searchTerm.toLowerCase();
-                return Object.keys(SCALES).filter(k => SCALES[k].name.toLowerCase().includes(term));
-            }, [searchTerm]);
+                return Object.keys(SCALES).filter(k => translateScaleName(SCALES[k].name, lang).toLowerCase().includes(term));
+            }, [searchTerm, lang]);
             
             useEffect(() => {
                 const closeMenu = (e) => { if (!e.target.closest('.scale-selector')) setIsScaleMenuOpen(false); };
@@ -633,17 +865,26 @@
             const selectedChordNotesForStaff = selectedChordNotes.map(n => ({ note: n }));
 
             return (
-                <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-20">
+                <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-20 transition-colors duration-300">
                     <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-slate-200 z-50">
                         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <button onClick={() => window.history.back()} className="p-2 hover:bg-slate-100 rounded-full"><ChevronDown className="rotate-90 text-slate-500 w-6 h-6" /></button>
                             </div>
                             <div className="flex items-center gap-3">
+                                {/* Language Toggle */}
+                                <button 
+                                    onClick={() => setLang(lang === 'en' ? 'es' : 'en')}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-600 transition-colors mr-2"
+                                >
+                                    <Globe size={14} />
+                                    <span>{lang === 'en' ? 'ES' : 'EN'}</span>
+                                </button>
+
                                 <div className="relative group">
                                     <button className={`w-10 h-10 rounded-full bg-${color}-100 text-${color}-700 font-bold flex items-center justify-center border-2 border-${color}-200 hover:bg-${color}-200 transition-colors`}>{root}</button>
                                     <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-xl border border-slate-100 p-2 grid grid-cols-4 gap-1 w-48 hidden group-hover:grid">
-                                        {[...new Set([...NOTES_SHARP, ...NOTES_FLAT])].sort().map(n => <button key={n} onClick={() => setRoot(n)} className={`p-2 text-sm rounded hover:bg-slate-50 ${root === n ? `bg-${color}-100 text-${color}-700 font-bold` : ''}`}>{n}</button>)}
+                                        {['C', 'C#', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'].map(n => <button key={n} onClick={() => setRoot(n)} className={`p-2 text-sm rounded hover:bg-slate-50 ${root === n ? `bg-${color}-100 text-${color}-700 font-bold` : ''}`}>{n}</button>)}
                                     </div>
                                 </div>
                                 <button onClick={handlePlay} disabled={isPlaying} className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isPlaying ? `bg-${color}-300` : `bg-${color}-600 hover:bg-${color}-700 text-white shadow-lg shadow-${color}-200`}`}>{isPlaying ? <Volume2 size={20} className="animate-pulse" /> : <Play size={20} className="ml-1" />}</button>
@@ -662,16 +903,16 @@
                                         </div>
                                         <div>
                                             <h1 className="text-3xl font-bold text-slate-900">ScaleMaster</h1>
-                                            <p className="text-slate-500 text-sm">Interactive Music Theory Explorer</p>
+                                            <p className="text-slate-500 text-sm">{t('subtitle')}</p>
                                         </div>
                                     </div>
-                                    <p className="text-xs text-slate-400 mt-1 font-mono pl-1">Created by Carlos David <a href="https://cdcruzher.github.io/cdcruzher/" target="_blank" className={`text-${color}-500 hover:text-${color}-600 font-bold transition-colors`}>@cdcruzher</a></p>
+                                    <p className="text-xs text-slate-400 mt-1 font-mono pl-1">{t('createdBy')} Carlos David <a href="https://cdcruzher.github.io/cdcruzher/" target="_blank" className={`text-${color}-500 hover:text-${color}-600 font-bold transition-colors`}>@cdcruzher</a></p>
                                 </div>
 
                                 <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm relative z-20">
-                                    <div className="flex items-center justify-between mb-4"><h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Selected Scale</h2></div>
+                                    <div className="flex items-center justify-between mb-4"><h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('selectedScale')}</h2></div>
                                     <div className="flex items-center gap-3 mb-4">
-                                        <h1 className="text-3xl font-bold text-slate-800 tracking-tight">{root} {SCALES[scaleKey].name}</h1>
+                                        <h1 className="text-3xl font-bold text-slate-800 tracking-tight">{root} {translateScaleName(SCALES[scaleKey].name, lang)}</h1>
                                     </div>
                                     
                                     <div className="relative w-full scale-selector">
@@ -679,7 +920,7 @@
                                             onClick={(e) => { e.stopPropagation(); setIsScaleMenuOpen(!isScaleMenuOpen); }} 
                                             className="flex items-center justify-between w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors text-slate-700 font-medium"
                                         >
-                                            <span>Change Scale Type</span>
+                                            <span>{t('changeScale')}</span>
                                             <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${isScaleMenuOpen ? 'rotate-180' : ''}`}/>
                                         </button>
                                         
@@ -690,7 +931,7 @@
                                                         <Search size={14} className="absolute left-3 top-3 text-slate-400" />
                                                         <input 
                                                             type="text" 
-                                                            placeholder="Find a scale (e.g. 'blues', 'locrian')..." 
+                                                            placeholder={t('searchPlaceholder')} 
                                                             className="w-full bg-slate-50 border border-slate-200 rounded-md pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100"
                                                             value={searchTerm}
                                                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -700,17 +941,30 @@
                                                 </div>
                                                 <div className="overflow-y-auto flex-1">
                                                     {filteredScales.length > 0 ? (
-                                                        filteredScales.map(k => (
-                                                            <button 
-                                                                key={k} 
-                                                                onClick={() => { setScaleKey(k); setIsScaleMenuOpen(false); }} 
-                                                                className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-${color}-50 ${scaleKey === k ? `bg-${color}-100 text-${color}-700 font-bold` : ''}`}
-                                                            >
-                                                                {SCALES[k].name}
-                                                            </button>
-                                                        ))
+                                                        filteredScales.map(k => {
+                                                            const isFree = FREE_SCALES.includes(k);
+                                                            const isLocked = !isFree && !isPremium;
+                                                            return (
+                                                                <button 
+                                                                    key={k} 
+                                                                    onClick={() => { 
+                                                                        if (isLocked) {
+                                                                            setShowPremiumModal(true);
+                                                                            setIsScaleMenuOpen(false);
+                                                                        } else {
+                                                                            setScaleKey(k); 
+                                                                            setIsScaleMenuOpen(false); 
+                                                                        }
+                                                                    }} 
+                                                                    className={`w-full text-left px-3 py-2 text-sm rounded flex items-center justify-between ${scaleKey === k ? `bg-${color}-100 text-${color}-700 font-bold` : isLocked ? 'text-slate-400 hover:bg-slate-50' : `hover:bg-${color}-50 text-slate-700`}`}
+                                                                >
+                                                                    <span>{translateScaleName(SCALES[k].name, lang)}</span>
+                                                                    {isLocked && <Lock size={14} className="text-slate-300" />}
+                                                                </button>
+                                                            );
+                                                        })
                                                     ) : (
-                                                        <div className="p-4 text-center text-xs text-slate-400">No scales found.</div>
+                                                        <div className="p-4 text-center text-xs text-slate-400">{t('noScales')}</div>
                                                     )}
                                                 </div>
                                             </div>
@@ -721,13 +975,13 @@
 
                             <div className="lg:col-span-7 flex justify-center lg:justify-end">
                                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 w-full flex justify-center max-w-md">
-                                    <CircleOfFifths root={root} scaleKey={scaleKey} currentNotes={notes} onRootChange={setRoot} color={color} />
+                                    <CircleOfFifths root={root} scaleKey={scaleKey} currentNotes={notes} onRootChange={setRoot} color={color} t={t} />
                                 </div>
                             </div>
                         </div>
 
                         <section>
-                            <div className="flex items-center justify-between mb-4"><h2 className="text-lg font-bold text-slate-800">Intervallic Structure</h2></div>
+                            <div className="flex items-center justify-between mb-4"><h2 className="text-lg font-bold text-slate-800">{t('intervallicStructure')}</h2></div>
                             <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 overflow-x-auto custom-scrollbar">
                                 <div className="flex items-start min-w-max space-x-1 justify-between md:justify-start md:space-x-8">
                                     {notes.map((note, idx) => {
@@ -751,20 +1005,36 @@
                         </section>
 
                         <section>
-                            <div className="flex items-center justify-between mb-4"><h2 className="text-lg font-bold text-slate-800">Notation & Tablature</h2></div>
+                            <div className="flex items-center justify-between mb-4"><h2 className="text-lg font-bold text-slate-800">{t('notationTab')}</h2></div>
                             <div className="space-y-4">
-                                <Staff notes={notes} />
-                                <ScaleTablature notes={notes} root={root} />
+                                <Staff notes={notes} t={t} />
+                                <ScaleTablature notes={notes} root={root} scaleKey={scaleKey} color={color} t={t} isPremium={isPremium} setShowPremiumModal={setShowPremiumModal} />
                             </div>
                         </section>
 
                         <section className="pb-10 relative">
                             <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
-                                <h2 className="text-lg font-bold text-slate-800">Diatonic Harmonization</h2>
+                                <h2 className="text-lg font-bold text-slate-800">{t('diatonicHarmonization')}</h2>
                                 <div className="flex overflow-x-auto gap-1 bg-slate-100 rounded-lg p-1 self-start md:self-auto">
-                                    {[3, 4, 5, 6, 7].map(num => (
-                                        <button key={num} onClick={() => setChordComplexity(num)} className={`flex-1 min-w-[60px] px-3 py-1 text-xs font-bold rounded-md transition-all whitespace-nowrap ${chordComplexity === num ? `bg-white text-${color}-700 shadow-sm ring-1 ring-${color}-100` : 'text-slate-500 hover:text-slate-700'}`}>{num === 3 ? 'Triads' : num === 4 ? '7th' : num === 5 ? '9th' : num === 6 ? '11th' : '13th'}</button>
-                                    ))}
+                                    {[3, 4, 5, 6, 7].map(num => {
+                                        const isLocked = num > 3 && !isPremium;
+                                        return (
+                                            <button 
+                                                key={num} 
+                                                onClick={() => {
+                                                    if (isLocked) {
+                                                        setShowPremiumModal(true);
+                                                    } else {
+                                                        setChordComplexity(num);
+                                                    }
+                                                }} 
+                                                className={`flex-1 min-w-[60px] px-3 py-1 text-xs font-bold rounded-md transition-all whitespace-nowrap flex items-center justify-center gap-1 ${chordComplexity === num ? `bg-white text-${color}-700 shadow-sm ring-1 ring-${color}-100` : isLocked ? 'text-slate-400 hover:bg-slate-200 cursor-pointer' : 'text-slate-500 hover:text-slate-700'}`}
+                                            >
+                                                <span>{num === 3 ? t('triads') : num === 4 ? '7th' : num === 5 ? '9th' : num === 6 ? '11th' : '13th'}</span>
+                                                {isLocked && <Lock size={10} className="mb-0.5 opacity-70" />}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
 
@@ -777,12 +1047,12 @@
                                                     <span className={`text-xl font-bold text-${color}-600`}>{selectedChord.names[chordComplexity]}</span>
                                                 </div>
                                                 <div className="flex bg-slate-100 rounded-md p-0.5">
-                                                    <button onClick={() => setChordViewMode('staff')} className={`px-3 py-1 rounded text-xs font-bold ${chordViewMode === 'staff' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400'}`}>Staff</button>
-                                                    <button onClick={() => setChordViewMode('guitar')} className={`px-3 py-1 rounded text-xs font-bold ${chordViewMode === 'guitar' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400'}`}>Guitar</button>
+                                                    <button onClick={() => setChordViewMode('staff')} className={`px-3 py-1 rounded text-xs font-bold ${chordViewMode === 'staff' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400'}`}>{t('staff')}</button>
+                                                    <button onClick={() => setChordViewMode('guitar')} className={`px-3 py-1 rounded text-xs font-bold ${chordViewMode === 'guitar' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400'}`}>{t('guitar')}</button>
                                                 </div>
                                                 <button onClick={() => setSelectedChordIndex(null)} className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-md text-slate-400 hover:text-slate-600 border border-slate-100"><X size={16}/></button>
                                             </div>
-                                            {chordViewMode === 'staff' ? <Staff notes={selectedChordNotesForStaff} isChord={true} /> : <GuitarTab chordNotes={selectedChordNotes} root={selectedChord.root} />}
+                                            {chordViewMode === 'staff' ? <Staff notes={selectedChordNotesForStaff} isChord={true} t={t} /> : <GuitarTab chordNotes={selectedChordNotes} root={selectedChord.root} t={t} />}
                                         </div>
                                     </div>
                                 )}
@@ -794,13 +1064,13 @@
                                                 <button key={i} onClick={() => handleChordClick(i)} className={`transition-all border rounded-xl p-2 flex flex-col items-center justify-center min-h-[90px] relative overflow-hidden group ${selectedChordIndex === i ? `bg-${color}-100 border-${color}-300 ring-2 ring-${color}-200` : `bg-white hover:bg-${color}-50 border-slate-200 active:scale-95 hover:shadow-md`}`}>
                                                     <span className="text-[10px] font-bold text-slate-400 mb-1 absolute top-2 right-2">{['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'][i]}</span>
                                                     <span className={`font-bold text-slate-700 text-center leading-tight mt-2 ${chord.names[chordComplexity].length > 5 ? 'text-xs' : 'text-sm'}`}>{chord.names[chordComplexity]}</span>
-                                                    <span className={`text-[10px] text-${color}-400 opacity-0 group-hover:opacity-100 transition-opacity mt-1`}>Play</span>
+                                                    <span className={`text-[10px] text-${color}-400 opacity-0 group-hover:opacity-100 transition-opacity mt-1`}>{t('play')}</span>
                                                 </button>
                                             ))}
                                         </div>
                                     ) : (
                                         <div className="text-center p-8 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-slate-400">
-                                            Harmonization not available for this scale type (Requires 7-note diatonic scale).
+                                            {t('harmonizationUnavailable')}
                                         </div>
                                     )}
                                 </div>
@@ -808,13 +1078,39 @@
                         </section>
 
                         <div className="mt-12 pt-8 border-t border-slate-200 flex flex-col items-center pb-8">
-                            <p className="text-xs text-slate-400 mb-4 uppercase tracking-wider font-semibold">Support the Project</p>
+                            <p className="text-xs text-slate-400 mb-4 uppercase tracking-wider font-semibold">{t('supportProject')}</p>
                             <a href="https://www.paypal.com/donate/?business=6EN68NHUTM2KQ&no_recurring=0&item_name=Thanks+for+your+support+Amigo%21&currency_code=USD" target="_blank" className="block w-32 h-32 bg-white p-2 rounded-xl border border-slate-200 hover:shadow-lg hover:scale-105 transition-all cursor-pointer">
                                 <img src="qrcode.jpg" alt="Donate" className="w-full h-full object-contain" onError={(e) => e.target.src='https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https%3A%2F%2Fwww.paypal.com%2Fdonate%2F%3Fbusiness%3D6EN68NHUTM2KQ%26no_recurring%3D0%26item_name%3DThanks%2Bfor%2Byour%2Bsupport%2BAmigo%21%26currency_code%3DUSD'} />
                             </a>
-                            <p className="text-[10px] text-slate-400 mt-3 text-center">Scan or click to donate via PayPal</p>
+                            <p className="text-[10px] text-slate-400 mt-3 text-center">{t('scanDonate')}</p>
                         </div>
                     </main>
+
+                    {/* Modal Premium */}
+                    {showPremiumModal && (
+                        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative animate-in zoom-in-95 duration-200">
+                                <button onClick={() => setShowPremiumModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><X size={20}/></button>
+                                <div className="flex flex-col items-center text-center mt-4">
+                                    <div className="w-16 h-16 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mb-4">
+                                        <Star size={32} />
+                                    </div>
+                                    <h2 className="text-2xl font-bold text-slate-800 mb-2">{t('unlockPremium')}</h2>
+                                    <p className="text-slate-500 mb-6 text-sm">{t('premiumDesc')}</p>
+                                    
+                                    <div className="w-full space-y-3">
+                                        <button onClick={() => { setIsPremium(true); setShowPremiumModal(false); }} className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-amber-200 transition-all active:scale-95 flex items-center justify-center gap-2">
+                                            <Unlock size={18} />
+                                            <span>{t('getPremium')}</span>
+                                        </button>
+                                        <button onClick={() => setShowPremiumModal(false)} className="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 px-4 rounded-xl transition-all">
+                                            {t('maybeLater')}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         }
